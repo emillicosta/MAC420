@@ -42,9 +42,8 @@ class Sphere(Actor):
         vertices = []
         indices = []
         normals = []
-       
+        texture = []
 
-        ## subdivide triangles
         for i in range(self._v+1):
             
             theta = math.pi / 2 - i * self._vStep
@@ -74,14 +73,17 @@ class Sphere(Actor):
                         indices.append([k1 + 1, k2, k2+1])
                     k1 = k1+1
                     k2 = k2+1
-#icosaedro
-           
+                
+                s = j / self._h
+                t = i / self._v
+                texture.append([s, t])
 
         self._vertices = np.array(vertices, dtype=np.float32)
         if self._rgb_colors:
             self._colors = np.abs(np.array(vertices, dtype=np.float32))
         self._normals = np.array(normals, dtype=np.float32)
         self._indices = np.array(indices, dtype=np.uint32)
+        self._texcoords = np.array(texture, dtype=np.uint32)
 
 
     def initialize(self):
@@ -92,6 +94,7 @@ class Sphere(Actor):
         ## create object
         self.create(self._vertices, colors=self._colors if self._rgb_colors else None,
             normals=self._normals,
+            texcoords=self._texcoords,
             indices=self._indices)
             
 
