@@ -45,6 +45,7 @@ class RenderWidget(QWidget):
         self.actorCombo.addItem("Pyramid 1", Renderer.ActorType.PYRAMID_1)
         self.actorCombo.addItem("Pyramid 2", Renderer.ActorType.PYRAMID_2)
         self.actorCombo.addItem("Sphere", Renderer.ActorType.SPHERE)
+        self.actorCombo.addItem("Sphere Tessellation", Renderer.ActorType.SPHERETESSELLATION)
         self.actorCombo.currentIndexChanged.connect(self._renderer.changeActor)
         self._bottomLayout.addWidget(self.actorCombo)
 
@@ -111,7 +112,7 @@ class RenderWidget(QWidget):
         self._drawStyleCombo.addItem("Solid with edges")
         self._drawStyleCombo.setFont(self._font)
         self._drawStyleCombo.activated.connect(self._renderer.drawStyleChanged)
-        self._drawStyleCombo.setCurrentIndex(2)
+        self._drawStyleCombo.setCurrentIndex(3)
         self._renderLayout.addWidget(self._drawStyleCombo)
 
         label = QLabel(" Quality: ")

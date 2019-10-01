@@ -36,7 +36,7 @@ class Scene(QObject):
 
         self._viewer = viewer
         self._name = kwargs.get("name", "main") 
-        self._draw_style = Scene.DrawStyle.Solid
+        self._draw_style = Scene.DrawStyle.SolidWithEdges
         self._background_actor = kwargs.get("background", None)
         self._actors = OrderedDict()
         self._systemActors = OrderedDict()

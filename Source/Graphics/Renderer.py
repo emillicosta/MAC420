@@ -23,6 +23,7 @@ from Source.Graphics.Cylinder import Cylinder
 from Source.Graphics.Icosahedron import Icosahedron
 from Source.Graphics.Floor import Floor
 from Source.Graphics.Sphere import Sphere
+from Source.Graphics.SphereTessellation import SphereTessellation
 import Source.Graphics.PyramidOne as PyramidOne
 import Source.Graphics.PyramidTwo as PyramidTwo
 
@@ -38,7 +39,8 @@ class Renderer(QOpenGLWidget):
         ICOSAHEDRON = 4, 
         PYRAMID_1 = 5, 
         PYRAMID_2 = 6,
-        SPHERE = 7
+        SPHERE = 7,
+        SPHERETESSELLATION = 8
 
     ## initialization
     def __init__(self, parent=None, **kwargs):
@@ -157,7 +159,7 @@ class Renderer(QOpenGLWidget):
             xform.translate(0, 1.0, 0)
             # self._world.addActor(Cone(self._world, resolution=24, height=1.0, radius=0.5, transform=xform))
             # self._world.addActor(PyramidOne.Pyramid(self._world))
-            self.currentActor_ = Cone(self._world, transform=xform) #PyramidTwo.Pyramid(self._world)
+            self.currentActor_ = SphereTessellation(self._world) #Cone(self._world, transform=xform) #PyramidTwo.Pyramid(self._world)
             self._world.addActor(self.currentActor_)
             ###
 
@@ -495,6 +497,8 @@ class Renderer(QOpenGLWidget):
             self.currentActor_ = PyramidTwo.Pyramid(self._world)
         elif index == Renderer.ActorType.SPHERE:
             self.currentActor_ = Sphere(self._world)
+        elif index == Renderer.ActorType.SPHERETESSELLATION:
+            self.currentActor_ = SphereTessellation(self._world)
 
         self._world.addActor(self.currentActor_)
         
