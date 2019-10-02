@@ -153,13 +153,7 @@ class Renderer(QOpenGLWidget):
             ###
             ### Add an object to the scene
             ###
-            #self._world.addActor(Icosahedron(self._world, level=2))
-            xform = QMatrix4x4()
-            #xform.rotate(-90.0, 0.0, 0.0, 1.0)
-            xform.translate(0, 1.0, 0)
-            # self._world.addActor(Cone(self._world, resolution=24, height=1.0, radius=0.5, transform=xform))
-            # self._world.addActor(PyramidOne.Pyramid(self._world))
-            self.currentActor_ = SphereTessellation(self._world) #Cone(self._world, transform=xform) #PyramidTwo.Pyramid(self._world)
+            self.currentActor_ = SphereTessellation(self._world, subdivisionLevel=10, radius=1.0) 
             self._world.addActor(self.currentActor_)
             ###
 
@@ -489,8 +483,7 @@ class Renderer(QOpenGLWidget):
         elif index == Renderer.ActorType.FLOOR:            
             self.currentActor_ = Floor(self._world, transform=xform)
         elif index == Renderer.ActorType.ICOSAHEDRON:
-            xform.translate(0, 0.85, 0)
-            self.currentActor_ = Icosahedron(self._world, transform=xform)
+            self.currentActor_ = Icosahedron(self._world)
         elif index == Renderer.ActorType.PYRAMID_1:
             self.currentActor_ = PyramidOne.Pyramid(self._world)
         elif index == Renderer.ActorType.PYRAMID_2:
@@ -498,7 +491,7 @@ class Renderer(QOpenGLWidget):
         elif index == Renderer.ActorType.SPHERE:
             self.currentActor_ = Sphere(self._world)
         elif index == Renderer.ActorType.SPHERETESSELLATION:
-            self.currentActor_ = SphereTessellation(self._world)
+            self.currentActor_ = SphereTessellation(self._world, subdivisionLevel=5)
 
         self._world.addActor(self.currentActor_)
         

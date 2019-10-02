@@ -12,9 +12,7 @@ class SphereTessellation(Actor):
 
         self._level = kwargs.get("level", 30)
         self._radius = kwargs.get("radius", 1.0)
-        self._rgb_colors = kwargs.get("colors", True)
-
-        self.setInnerSubdivisionLevel(self._level)
+        self._rgb_colors = kwargs.get("colors", False)
 
         ## register shaders
         if self._rgb_colors:
@@ -27,11 +25,6 @@ class SphereTessellation(Actor):
             self.setSolidFlatShader(self.shaderCollection.uniformMaterialPhongFlatShader())
             self.setNoLightSolidShader(self.shaderCollection.uniformMaterialShader())
             self.setWireframeShader(self.shaderCollection.uniformMaterialPhongTessellationShader())
-
-         
-        #self._active_shader = self.shaderCollection.tessellationShader()
-
-        #self._active_shader.setUniformValue("outerSubdivisionLevel", self._level)
         
 
         self._vertices = None

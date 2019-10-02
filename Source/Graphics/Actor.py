@@ -39,6 +39,8 @@ class Actor(QObject):
         super(Actor, self).__init__()
 
         self._scene = scene
+        self._subdivisionLevel = kwargs.get("subdivisionLevel", 1)
+        self._radius = kwargs.get("radius", 1.0)
         self._transform = kwargs.get("transform", QMatrix4x4())
         self._render_mode = kwargs.get("mode", Actor.RenderMode.Triangles)
         self._render_type = kwargs.get("type", Actor.RenderType.Solid)
@@ -54,7 +56,6 @@ class Actor(QObject):
         self._nolight_solid_shader = self._shader_collection.uniformMaterialShader()
         self._wireframe_shader = self._shader_collection.uniformMaterialShader()
         self._nolight_wireframe_shader = self._shader_collection.uniformMaterialShader()
-        #self._tesselation_shader = self._shader_collection.tessellationShader()
         self._normal_visualizing_shader = self._shader_collection.normalVisShader()
         self._active_shader = self._solid_shader
         self._active_material = self._material
@@ -90,6 +91,7 @@ class Actor(QObject):
     def update(self, **kwargs):
         """Update this node"""
         self._transform = kwargs.get("transform", QMatrix4x4())
+        self._subdivisionLevel = kwargs.get("subdivisionLevel", 1)
         self._render_mode = kwargs.get("mode", Actor.RenderMode.Triangles)
         self._render_type = kwargs.get("type", Actor.RenderType.Solid)
         self._material = kwargs.get("material", Material())
@@ -254,10 +256,6 @@ class Actor(QObject):
         """Sets the solid shader of this actor"""
         self._solid_shader = shader
 
-    #def setTesselationShader(self, shader):
-    #    """Sets the solid shader of this actor"""
-    #    self._tesselation_shader = shader
-
     
     @property
     def solidFlatShader(self):
@@ -362,9 +360,7 @@ class Actor(QObject):
         
         ## list of shaders
         shaders = [self._solid_shader, self._wireframe_shader, self._nolight_solid_shader, 
-            self._nolight_wireframe_shader, self._normal_visualizing_shader
-            #, self._tesselation_shader
-            ]
+            self._nolight_wireframe_shader, self._normal_visualizing_shader]
 
         ## bind vao
         self._vao.create()
@@ -474,8 +470,9 @@ class Actor(QObject):
         self._active_shader.setUniformValue("projectionMatrix", self._scene.camera.projectionMatrix)
         self._active_shader.setUniformValue("normalMatrix", normalMatrix)
         
-        self._active_shader.setUniformValue("innerSubdivisionLevel", 5)
-        self._active_shader.setUniformValue("outerSubdivisionLevel", 5)
+        self._active_shader.setUniformValue("innerSubdivisionLevel", self._subdivisionLevel)
+        self._active_shader.setUniformValue("outerSubdivisionLevel", self._subdivisionLevel)
+        self._active_shader.setUniformValue("radius", self._radius)
 
 
         if self.texture() is not None:

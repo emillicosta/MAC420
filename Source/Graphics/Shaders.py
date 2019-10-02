@@ -161,6 +161,7 @@ class Shaders(QObject):
 		uniform mat3 normalMatrix;
 		uniform vec4 lightPosition;
 		uniform vec3 lightAttenuation;
+		uniform float radius;
 
 		smooth out vec3 vertexColor;
 
@@ -175,7 +176,7 @@ class Shaders(QObject):
 			vec3 p1 = gl_TessCoord.y * positionES[1];
 			vec3 p2 = gl_TessCoord.z * positionES[2];
 
-			vec3 v = normalize(p0 + p1 + p2);
+			vec3 v = normalize(p0 + p1 + p2) * radius;
 			vertexNormal = viewMatrix * vec4(normalMatrix * v, 0.0);
 
 			vertexPosition = vec4(v, 1);
@@ -305,6 +306,7 @@ class Shaders(QObject):
 		uniform mat3 normalMatrix;
 		uniform vec4 lightPosition;
 		uniform vec3 lightAttenuation;
+		uniform float radius;
 
 
 		smooth out vec4 vertexNormal;
@@ -318,7 +320,7 @@ class Shaders(QObject):
 			vec3 p1 = gl_TessCoord.y * positionES[1];
 			vec3 p2 = gl_TessCoord.z * positionES[2];
 
-			vec3 v = normalize(p0 + p1 + p2);
+			vec3 v = normalize(p0 + p1 + p2) * radius;
 			vertexNormal = viewMatrix * vec4(normalMatrix * v, 0.0);
 
 			vertexPosition = vec4(v, 1);
@@ -337,7 +339,7 @@ class Shaders(QObject):
 		}
 		"""
 	
-	
+
 	@classmethod
 	def uniformMaterialPhongVertexFlatShader(cls):
 		vertexShaderSource = """
