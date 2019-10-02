@@ -12,27 +12,35 @@ class SphereTessellation(Actor):
 
         self._level = kwargs.get("level", 30)
         self._radius = kwargs.get("radius", 1.0)
-        self._rgb_colors = kwargs.get("colors", False)
+        self._rgb_colors = kwargs.get("colors", True)
+
+        self.setInnerSubdivisionLevel(self._level)
 
         ## register shaders
         if self._rgb_colors:
-            self.setSolidShader(self.shaderCollection.attributeColorPhongShader())
+            self.setSolidShader(self.shaderCollection.attributeColorPhongTessellationShader())
             self.setSolidFlatShader(self.shaderCollection.attributeColorPhongFlatShader())
             self.setNoLightSolidShader(self.shaderCollection.attributeColorShader())
-            self.setWireframeShader(self.shaderCollection.uniformMaterialShader())
+            self.setWireframeShader(self.shaderCollection.uniformMaterialPhongTessellationShader())
         else:
-            self.setSolidShader(self.shaderCollection.uniformMaterialPhongShader())
+            self.setSolidShader(self.shaderCollection.uniformMaterialPhongTessellationShader())
             self.setSolidFlatShader(self.shaderCollection.uniformMaterialPhongFlatShader())
             self.setNoLightSolidShader(self.shaderCollection.uniformMaterialShader())
-            self.setWireframeShader(self.shaderCollection.uniformMaterialPhongShader())
+            self.setWireframeShader(self.shaderCollection.uniformMaterialPhongTessellationShader())
 
-        #self.shaderProgram_.setUniformValue("innerSubdivisionLevel", self._level)
-        #self.shaderProgram_.setUniformValue("outerSubdivisionLevel", self._level)
+         
+        #self._active_shader = self.shaderCollection.tessellationShader()
+
+        #self._active_shader.setUniformValue("outerSubdivisionLevel", self._level)
+        
+
         self._vertices = None
 
         ## create actor
         self.initialize()
 
+
+    
 
     def addVertex(self, v, vertices):
         """Add a vertex into the array"""
@@ -48,24 +56,24 @@ class SphereTessellation(Actor):
         middlePointIndexCache = dict()
 
         t = (1.0 + math.sqrt(5.0)) / 2.0
+        u = 1.0
 
-        self.addVertex(np.array((-1.0,  t,  0)), vertices)
-        self.addVertex(np.array(( 1.0,  t,  0)), vertices)
-        self.addVertex(np.array((-1.0, -t,  0)), vertices)
-        self.addVertex(np.array(( 1.0, -t,  0)), vertices)
+        self.addVertex(np.array((-u,  t,  0)), vertices)
+        self.addVertex(np.array(( u,  t,  0)), vertices)
+        self.addVertex(np.array((-u, -t,  0)), vertices)
+        self.addVertex(np.array(( u, -t,  0)), vertices)
 
-        self.addVertex(np.array(( 0, -1.0,  t)), vertices)
-        self.addVertex(np.array(( 0,  1.0,  t)), vertices)
-        self.addVertex(np.array(( 0, -1.0, -t)), vertices)
-        self.addVertex(np.array(( 0,  1.0, -t)), vertices)
+        self.addVertex(np.array(( 0, -u,  t)), vertices)
+        self.addVertex(np.array(( 0,  u,  t)), vertices)
+        self.addVertex(np.array(( 0, -u, -t)), vertices)
+        self.addVertex(np.array(( 0,  u, -t)), vertices)
 
-        self.addVertex(np.array(( t,  0, -1.0)), vertices)
-        self.addVertex(np.array(( t,  0,  1.0)), vertices)
-        self.addVertex(np.array((-t,  0, -1.0)), vertices)
-        self.addVertex(np.array((-t,  0,  1.0)), vertices)
+        self.addVertex(np.array(( t,  0, -u)), vertices)
+        self.addVertex(np.array(( t,  0,  u)), vertices)
+        self.addVertex(np.array((-t,  0, -u)), vertices)
+        self.addVertex(np.array((-t,  0,  u)), vertices)
 
         ## 5 faces around point 0
-        indices += [[0, 11, 5]]
         indices += [[0, 11, 5]]
         indices += [[0, 5, 1]]
         indices += [[0, 1, 7]]
@@ -109,11 +117,13 @@ class SphereTessellation(Actor):
         ## create object
         self.create(self._vertices, colors=self._colors if self._rgb_colors else None,
             normals=self._normals,
-            indices=self._indices)
+            indices=self._indices
+            )
             
 
     def render(self):
         """Render SphereTessellation"""
-        GL.glDrawElements(self._render_mode, self.numberOfIndices, GL.GL_UNSIGNED_INT, None)
+       # GL.glDrawElements(self._render_mode, self.numberOfIndices, GL.GL_UNSIGNED_INT, None)
+        GL.glDrawElements(GL.GL_PATCHES, self.numberOfIndices, GL.GL_UNSIGNED_INT, None)
 
     

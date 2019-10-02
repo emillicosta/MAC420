@@ -47,6 +47,7 @@ class Shaders(QObject):
 		self.__instance._uniformMaterialPhongShader.link()
 
 		## create color-based Phong mesh shader
+		#AQUI1
 		self.__instance._attributeColorPhongShader = QOpenGLShaderProgram()
 		self.__instance._attributeColorPhongShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.attributeMaterialPhongVertexShader())
 		self.__instance._attributeColorPhongShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.attributeMaterialPhongFragmentShader())
@@ -82,6 +83,261 @@ class Shaders(QObject):
 		self.__instance._normalVisShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.normalVisFragmentShader())
 		self.__instance._normalVisShader.link()
 
+		self.__instance._attributeColorPhongTessellationShader = QOpenGLShaderProgram()
+		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.attributeMaterialPhongTSLVertexShader())
+		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.attributeMaterialPhongTCS())
+		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.attributeMaterialPhongTES())
+		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.attributeMaterialPhongTSLfragmentShader())
+		self.__instance._attributeColorPhongTessellationShader.link()
+
+		## create uniform material shader with no lighting tessellation 
+		self.__instance._uniformMaterialPhongTessellationShader = QOpenGLShaderProgram()
+		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.uniformMaterialPhongTSLVertexShader())
+		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.uniformMaterialPhongTCS())
+		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.uniformMaterialPhongTES())
+		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.uniformMaterialPhongFragmentShader())
+		self.__instance._uniformMaterialPhongTessellationShader.link()
+
+
+	@classmethod
+	def attributeMaterialPhongTSLVertexShader(cls):
+		vertexShaderSource = """
+		#version 400
+		layout(location = 0) in vec3 position;
+		layout(location = 2) in vec3 color;
+
+		out vec3 colorCS; 
+		out vec3 positionCS; 
+
+		//smooth out vec3 colorFS;
+
+		void main()
+		{
+		    colorCS = color;
+		    positionCS = position;
+
+		}
+		"""
+		return vertexShaderSource
+
+	@classmethod
+	def attributeMaterialPhongTCS(cls):
+		return """
+		#version 400 core
+		layout(vertices = 3) out;
+		
+		in vec3 positionCS[];
+		in vec3 colorCS[];
+
+		uniform int innerSubdivisionLevel;
+		uniform int outerSubdivisionLevel;
+
+		out vec3 positionES[];
+		out vec3 colorES[];
+
+		void main()
+		{
+			positionES[gl_InvocationID] = positionCS[gl_InvocationID];
+			colorES[gl_InvocationID] = colorCS[gl_InvocationID] ;
+			gl_TessLevelInner[0] = innerSubdivisionLevel;
+			gl_TessLevelOuter[0] = outerSubdivisionLevel;
+			gl_TessLevelOuter[1] = outerSubdivisionLevel;
+			gl_TessLevelOuter[2] = outerSubdivisionLevel;
+		}
+		"""
+
+	@classmethod
+	def attributeMaterialPhongTES(cls):
+		return """
+		#version 400 core
+		layout(triangles, equal_spacing, ccw) in;
+
+		in vec3 positionES[];
+		in vec3 colorES[];
+
+		uniform mat4 modelMatrix;
+		uniform mat4 viewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform mat3 normalMatrix;
+		uniform vec4 lightPosition;
+		uniform vec3 lightAttenuation;
+
+		smooth out vec3 vertexColor;
+
+		smooth out vec4 vertexNormal;
+		smooth out vec4 vertexPosition;
+		smooth out vec3 lightDirection;
+		smooth out float attenuation;
+
+		void main()
+		{
+			vec3 p0 = gl_TessCoord.x * positionES[0];
+			vec3 p1 = gl_TessCoord.y * positionES[1];
+			vec3 p2 = gl_TessCoord.z * positionES[2];
+
+			vec3 v = normalize(p0 + p1 + p2);
+			vertexNormal = viewMatrix * vec4(normalMatrix * v, 0.0);
+
+			vertexPosition = vec4(v, 1);
+
+			if (lightPosition.w == 0.0) {
+				lightDirection = normalize(lightPosition.xyz);
+				attenuation = 1.0;
+			} else {
+		    	lightDirection = normalize(lightPosition.xyz - vertexPosition.xyz);
+		    	float distance = length(lightPosition.xyz - vertexPosition.xyz);
+		    	attenuation = 1.0 / (lightAttenuation.x + lightAttenuation.y * distance + lightAttenuation.z * distance * distance);
+		    }
+
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+
+
+			vec3 c0 = gl_TessCoord.x * colorES[0];
+			vec3 c1 = gl_TessCoord.y * colorES[1];
+			vec3 c2 = gl_TessCoord.z * colorES[2];
+
+			vertexColor = c0 + c1 + c2;
+		}
+		"""
+
+	@classmethod
+	def attributeMaterialPhongTSLfragmentShader(cls):
+		fragmentShaderSource = """
+		#version 400
+		struct Material {
+			vec3 emission;
+			vec3 ambient;
+			vec3 diffuse;
+			vec3 specular;    
+			float shininess;
+		}; 
+
+		struct Light {
+			vec3 ambient;
+			vec3 diffuse;
+			vec3 specular;
+		};
+
+		smooth in vec4 vertexNormal;
+		smooth in vec4 vertexPosition;
+		smooth in vec3 lightDirection;
+		smooth in float attenuation;
+
+		uniform Material material;
+		uniform Light light;
+		
+		smooth in vec3 vertexColor;
+		out vec4 fragColor;
+
+		void main()
+		{
+			// ambient term
+			vec3 ambient = material.ambient * light.ambient;
+
+			// diffuse term
+			vec3 N = normalize(vertexNormal.xyz);
+			vec3 L = normalize(lightDirection);
+			vec3 diffuse = light.diffuse * vertexColor * max(dot(N, L), 0.0);
+
+			// specular term
+			vec3 E = normalize(-vertexPosition.xyz);
+	 		vec3 R = normalize(-reflect(L, N)); 
+			vec3 specular = light.specular * material.specular * pow(max(dot(R, E), 0.0), material.shininess);
+
+			// final intensity
+			vec3 intensity = material.emission + clamp(ambient + attenuation * (diffuse + specular), 0.0, 1.0);
+			fragColor = vec4(intensity, 1.0);
+		}
+		"""
+		return fragmentShaderSource
+	
+	@classmethod
+	def uniformMaterialPhongTSLVertexShader(cls):
+		vertexShaderSource = """
+		#version 400
+		layout(location = 0) in vec3 position;
+
+		out vec3 positionCS; 
+
+		void main()
+		{
+		    positionCS = position;
+
+		}
+		"""
+		return vertexShaderSource
+
+	@classmethod
+	def uniformMaterialPhongTCS(cls):
+		return """
+		#version 400 core
+		layout(vertices = 3) out;
+		
+		in vec3 positionCS[];
+
+		uniform int innerSubdivisionLevel;
+		uniform int outerSubdivisionLevel;
+
+		out vec3 positionES[];
+
+		void main()
+		{
+			positionES[gl_InvocationID] = positionCS[gl_InvocationID];
+			gl_TessLevelInner[0] = innerSubdivisionLevel;
+			gl_TessLevelOuter[0] = outerSubdivisionLevel;
+			gl_TessLevelOuter[1] = outerSubdivisionLevel;
+			gl_TessLevelOuter[2] = outerSubdivisionLevel;
+		}
+		"""
+
+	@classmethod
+	def uniformMaterialPhongTES(cls):
+		return """
+		#version 400 core
+		layout(triangles, equal_spacing, ccw) in;
+
+		in vec3 positionES[];
+		in vec3 colorES[];
+
+		uniform mat4 modelMatrix;
+		uniform mat4 viewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform mat3 normalMatrix;
+		uniform vec4 lightPosition;
+		uniform vec3 lightAttenuation;
+
+
+		smooth out vec4 vertexNormal;
+		smooth out vec4 vertexPosition;
+		smooth out vec3 lightDirection;
+		smooth out float attenuation;
+
+		void main()
+		{
+			vec3 p0 = gl_TessCoord.x * positionES[0];
+			vec3 p1 = gl_TessCoord.y * positionES[1];
+			vec3 p2 = gl_TessCoord.z * positionES[2];
+
+			vec3 v = normalize(p0 + p1 + p2);
+			vertexNormal = viewMatrix * vec4(normalMatrix * v, 0.0);
+
+			vertexPosition = vec4(v, 1);
+
+			if (lightPosition.w == 0.0) {
+				lightDirection = normalize(lightPosition.xyz);
+				attenuation = 1.0;
+			} else {
+		    	lightDirection = normalize(lightPosition.xyz - vertexPosition.xyz);
+		    	float distance = length(lightPosition.xyz - vertexPosition.xyz);
+		    	attenuation = 1.0 / (lightAttenuation.x + lightAttenuation.y * distance + lightAttenuation.z * distance * distance);
+		    }
+
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+
+		}
+		"""
+	
+	
 	@classmethod
 	def uniformMaterialPhongVertexFlatShader(cls):
 		vertexShaderSource = """
@@ -349,6 +605,7 @@ class Shaders(QObject):
 
 	@classmethod
 	def attributeMaterialPhongVertexShader(cls):
+		#AQUIVERTEX
 		vertexShaderSource = """
 		#version 400
 		layout(location = 0) in vec3 position;
@@ -388,6 +645,7 @@ class Shaders(QObject):
 
 	@classmethod
 	def attributeMaterialPhongFragmentShader(cls):
+		#AQUIFRAGMENT
 		fragmentShaderSource = """
 		#version 400
 		struct Material {
@@ -879,3 +1137,9 @@ class Shaders(QObject):
 
 	def normalVisShader(self):
 		return self.__instance._normalVisShader
+
+	def attributeColorPhongTessellationShader(self):
+		return self.__instance._attributeColorPhongTessellationShader
+
+	def uniformMaterialPhongTessellationShader(self):
+		return self.__instance._uniformMaterialPhongTessellationShader

@@ -10,7 +10,7 @@ class Sphere(Actor):
         """Initialize actor."""
         super(Sphere, self).__init__(renderer, **kwargs)
 
-        self._radius = kwargs.get("radius", 0.5)
+        self._radius = kwargs.get("radius", 1.0)
         self._v = kwargs.get("v", 30)
         self._h = kwargs.get("h", 30)
         self._rgb_colors = kwargs.get("colors", False)
@@ -59,12 +59,9 @@ class Sphere(Actor):
                 x = self._radius * math.cos(theta) * math.sin(phi)
                 y = self._radius * math.sin(theta)
                 z = self._radius * math.cos(theta) * math.cos(phi)
+                
                 vertices.append([x, y, z])
-
-                nx = x / self._radius
-                ny = y / self._radius
-                nz = z / self._radius
-                normals.append([nx, ny, nz])
+                normals.append([x, y, z])
 
                 if i != self._v and j != self._h:
                     if i != 0:

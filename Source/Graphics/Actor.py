@@ -54,6 +54,7 @@ class Actor(QObject):
         self._nolight_solid_shader = self._shader_collection.uniformMaterialShader()
         self._wireframe_shader = self._shader_collection.uniformMaterialShader()
         self._nolight_wireframe_shader = self._shader_collection.uniformMaterialShader()
+        #self._tesselation_shader = self._shader_collection.tessellationShader()
         self._normal_visualizing_shader = self._shader_collection.normalVisShader()
         self._active_shader = self._solid_shader
         self._active_material = self._material
@@ -75,8 +76,8 @@ class Actor(QObject):
         self._visible = True
         self._enabled = False
         self._pickable = True
-        self._selectable = False
         self._selected = False
+        self._selectable = False
         self._highlighted = False
         self._errorMaterial = Material.ruby()
         self._errorHighlight = False
@@ -253,6 +254,10 @@ class Actor(QObject):
         """Sets the solid shader of this actor"""
         self._solid_shader = shader
 
+    #def setTesselationShader(self, shader):
+    #    """Sets the solid shader of this actor"""
+    #    self._tesselation_shader = shader
+
     
     @property
     def solidFlatShader(self):
@@ -323,6 +328,12 @@ class Actor(QObject):
         """Update the GPU with new buffer contents"""
         self._vbo.unmap()
 
+    def setInnerSubdivisionLevel(self, val):
+        self.innerSubdivisionLevel_ = val
+        self._active_shader.bind()
+        self._active_shader.setUniformValue("innerSubdivisionLevel", val)
+        self._active_shader.release()
+
 
     def updateBuffer(self, vertices=None, normals=None, colors=None, texcoords=None):
         """Update buffer with new data"""
@@ -351,7 +362,9 @@ class Actor(QObject):
         
         ## list of shaders
         shaders = [self._solid_shader, self._wireframe_shader, self._nolight_solid_shader, 
-            self._nolight_wireframe_shader, self._normal_visualizing_shader]
+            self._nolight_wireframe_shader, self._normal_visualizing_shader
+            #, self._tesselation_shader
+            ]
 
         ## bind vao
         self._vao.create()
@@ -460,6 +473,10 @@ class Actor(QObject):
         self._active_shader.setUniformValue("viewMatrix", self._scene.camera.viewMatrix)
         self._active_shader.setUniformValue("projectionMatrix", self._scene.camera.projectionMatrix)
         self._active_shader.setUniformValue("normalMatrix", normalMatrix)
+        
+        self._active_shader.setUniformValue("innerSubdivisionLevel", 5)
+        self._active_shader.setUniformValue("outerSubdivisionLevel", 5)
+
 
         if self.texture() is not None:
             self._active_shader.setUniformValue("texObject", 0)
