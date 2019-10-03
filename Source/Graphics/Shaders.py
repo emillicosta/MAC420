@@ -84,44 +84,72 @@ class Shaders(QObject):
 		self.__instance._normalVisShader.link()
 
 		self.__instance._attributeColorPhongTessellationShader = QOpenGLShaderProgram()
-		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.attributeMaterialPhongTSLVertexShader())
-		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.attributeMaterialPhongTCS())
+		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.attributeColorTSLVertexShader())
+		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.attributeColorTCS())
 		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.attributeMaterialPhongTES())
-		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.attributeMaterialPhongTSLfragmentShader())
+		self.__instance._attributeColorPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.attributeMaterialPhongFragmentShader())
 		self.__instance._attributeColorPhongTessellationShader.link()
+
+		## create color-based Phong mesh shader
+		self.__instance._attributeColorPhongFlatTessellationShader = QOpenGLShaderProgram()
+		self.__instance._attributeColorPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.attributeColorTSLVertexShader())
+		self.__instance._attributeColorPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.attributeColorTCS())
+		self.__instance._attributeColorPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.attributeMaterialPhongFlatTES())
+		self.__instance._attributeColorPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.attributeMaterialPhongFragmentFlatShader())
+		self.__instance._attributeColorPhongFlatTessellationShader.link()
+
+		## create uniform material with no lighting calculations
+		self.__instance._attributeColorTessellationShader = QOpenGLShaderProgram()
+		self.__instance._attributeColorTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.attributeColorTSLVertexShader())
+		self.__instance._attributeColorTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.attributeColorTCS())
+		self.__instance._attributeColorTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.attributeColorTransformTES())
+		self.__instance._attributeColorTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.simpleFragmentShader())
+		self.__instance._attributeColorTessellationShader.link()
 
 		## create uniform material shader with no lighting tessellation 
 		self.__instance._uniformMaterialPhongTessellationShader = QOpenGLShaderProgram()
-		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.uniformMaterialPhongTSLVertexShader())
-		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.uniformMaterialPhongTCS())
+		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.uniformMaterialTSLVertexShader())
+		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.uniformMaterialTCS())
 		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.uniformMaterialPhongTES())
 		self.__instance._uniformMaterialPhongTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.uniformMaterialPhongFragmentShader())
 		self.__instance._uniformMaterialPhongTessellationShader.link()
 
+		## create Phong mesh shader
+		self.__instance._uniformMaterialPhongFlatTessellationShader = QOpenGLShaderProgram()
+		self.__instance._uniformMaterialPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.uniformMaterialTSLVertexShader())
+		self.__instance._uniformMaterialPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.uniformMaterialTCS())
+		self.__instance._uniformMaterialPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.uniformMaterialPhongFlatTES())
+		self.__instance._uniformMaterialPhongFlatTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.uniformMaterialPhongFragmentFlatShader())
+		self.__instance._uniformMaterialPhongFlatTessellationShader.link()
+
+		## create uniform material shader with no lighting 
+		self.__instance._uniformMaterialTessellationShader = QOpenGLShaderProgram()
+		self.__instance._uniformMaterialTessellationShader.addShaderFromSourceCode(QOpenGLShader.Vertex, Shaders.uniformMaterialTSLVertexShader())
+		self.__instance._uniformMaterialTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationControl, Shaders.uniformMaterialTCS())
+		self.__instance._uniformMaterialTessellationShader.addShaderFromSourceCode(QOpenGLShader.TessellationEvaluation, Shaders.uniformMaterialTES())
+		self.__instance._uniformMaterialTessellationShader.addShaderFromSourceCode(QOpenGLShader.Fragment, Shaders.simpleFragmentShader())
+		self.__instance._uniformMaterialTessellationShader.link()
 
 	@classmethod
-	def attributeMaterialPhongTSLVertexShader(cls):
+	def attributeColorTSLVertexShader(cls):
 		vertexShaderSource = """
 		#version 400
 		layout(location = 0) in vec3 position;
 		layout(location = 2) in vec3 color;
 
-		out vec3 colorCS; 
+		out vec3 colorCS;
 		out vec3 positionCS; 
-
-		//smooth out vec3 colorFS;
 
 		void main()
 		{
-		    colorCS = color;
 		    positionCS = position;
-
+		    colorCS = color;
 		}
 		"""
 		return vertexShaderSource
 
 	@classmethod
-	def attributeMaterialPhongTCS(cls):
+	def attributeColorTCS(cls):
 		return """
 		#version 400 core
 		layout(vertices = 3) out;
@@ -143,6 +171,44 @@ class Shaders(QObject):
 			gl_TessLevelOuter[0] = outerSubdivisionLevel;
 			gl_TessLevelOuter[1] = outerSubdivisionLevel;
 			gl_TessLevelOuter[2] = outerSubdivisionLevel;
+		}
+		"""
+
+	@classmethod
+	def attributeColorTransformTES(cls):
+		return """
+		#version 400 core
+		layout(triangles, equal_spacing, ccw) in;
+
+		in vec3 positionES[];
+		in vec3 colorES[];
+
+		uniform mat4 modelMatrix;
+		uniform mat4 viewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform float radius;
+
+		smooth out vec4 vertexColor;
+
+
+		void main()
+		{
+			vec3 p0 = gl_TessCoord.x * positionES[0];
+			vec3 p1 = gl_TessCoord.y * positionES[1];
+			vec3 p2 = gl_TessCoord.z * positionES[2];
+
+			vec3 v = normalize(p0 + p1 + p2) * radius;
+			vec3 normal = v / radius;
+
+
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+
+
+			vec3 c0 = gl_TessCoord.x * colorES[0];
+			vec3 c1 = gl_TessCoord.y * colorES[1];
+			vec3 c2 = gl_TessCoord.z * colorES[2];
+
+			vertexColor = vec4(c0 + c1 + c2, 1.0);
 		}
 		"""
 
@@ -177,7 +243,8 @@ class Shaders(QObject):
 			vec3 p2 = gl_TessCoord.z * positionES[2];
 
 			vec3 v = normalize(p0 + p1 + p2) * radius;
-			vertexNormal = viewMatrix * vec4(normalMatrix * v, 0.0);
+			vec3 normal = v / radius;
+			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
 
 			vertexPosition = vec4(v, 1);
 
@@ -202,58 +269,64 @@ class Shaders(QObject):
 		"""
 
 	@classmethod
-	def attributeMaterialPhongTSLfragmentShader(cls):
-		fragmentShaderSource = """
-		#version 400
-		struct Material {
-			vec3 emission;
-			vec3 ambient;
-			vec3 diffuse;
-			vec3 specular;    
-			float shininess;
-		}; 
+	def attributeMaterialPhongFlatTES(cls):
+		return """
+		#version 400 core
+		layout(triangles, equal_spacing, ccw) in;
 
-		struct Light {
-			vec3 ambient;
-			vec3 diffuse;
-			vec3 specular;
-		};
+		in vec3 positionES[];
+		in vec3 colorES[];
 
-		smooth in vec4 vertexNormal;
-		smooth in vec4 vertexPosition;
-		smooth in vec3 lightDirection;
-		smooth in float attenuation;
+		uniform mat4 modelMatrix;
+		uniform mat4 viewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform mat3 normalMatrix;
+		uniform vec4 lightPosition;
+		uniform vec3 lightAttenuation;
+		uniform float radius;
 
-		uniform Material material;
-		uniform Light light;
-		
-		smooth in vec3 vertexColor;
-		out vec4 fragColor;
+		smooth out vec3 vertexColor;
+
+		flat out vec4 vertexNormal;
+		smooth out vec4 vertexPosition;
+		smooth out vec3 lightDirection;
+		smooth out float attenuation;
 
 		void main()
 		{
-			// ambient term
-			vec3 ambient = material.ambient * light.ambient;
+			vec3 p0 = gl_TessCoord.x * positionES[0];
+			vec3 p1 = gl_TessCoord.y * positionES[1];
+			vec3 p2 = gl_TessCoord.z * positionES[2];
 
-			// diffuse term
-			vec3 N = normalize(vertexNormal.xyz);
-			vec3 L = normalize(lightDirection);
-			vec3 diffuse = light.diffuse * vertexColor * max(dot(N, L), 0.0);
+			vec3 v = normalize(p0 + p1 + p2) * radius;
+			vec3 normal = v / radius;
+			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
 
-			// specular term
-			vec3 E = normalize(-vertexPosition.xyz);
-	 		vec3 R = normalize(-reflect(L, N)); 
-			vec3 specular = light.specular * material.specular * pow(max(dot(R, E), 0.0), material.shininess);
+			vertexPosition = vec4(v, 1);
 
-			// final intensity
-			vec3 intensity = material.emission + clamp(ambient + attenuation * (diffuse + specular), 0.0, 1.0);
-			fragColor = vec4(intensity, 1.0);
+			if (lightPosition.w == 0.0) {
+				lightDirection = normalize(lightPosition.xyz);
+				attenuation = 1.0;
+			} else {
+		    	lightDirection = normalize(lightPosition.xyz - vertexPosition.xyz);
+		    	float distance = length(lightPosition.xyz - vertexPosition.xyz);
+		    	attenuation = 1.0 / (lightAttenuation.x + lightAttenuation.y * distance + lightAttenuation.z * distance * distance);
+		    }
+
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+
+
+			vec3 c0 = gl_TessCoord.x * colorES[0];
+			vec3 c1 = gl_TessCoord.y * colorES[1];
+			vec3 c2 = gl_TessCoord.z * colorES[2];
+
+			vertexColor = c0 + c1 + c2;
 		}
 		"""
-		return fragmentShaderSource
-	
+
+#sem cor
 	@classmethod
-	def uniformMaterialPhongTSLVertexShader(cls):
+	def uniformMaterialTSLVertexShader(cls):
 		vertexShaderSource = """
 		#version 400
 		layout(location = 0) in vec3 position;
@@ -263,13 +336,12 @@ class Shaders(QObject):
 		void main()
 		{
 		    positionCS = position;
-
 		}
 		"""
 		return vertexShaderSource
 
 	@classmethod
-	def uniformMaterialPhongTCS(cls):
+	def uniformMaterialTCS(cls):
 		return """
 		#version 400 core
 		layout(vertices = 3) out;
@@ -288,6 +360,46 @@ class Shaders(QObject):
 			gl_TessLevelOuter[0] = outerSubdivisionLevel;
 			gl_TessLevelOuter[1] = outerSubdivisionLevel;
 			gl_TessLevelOuter[2] = outerSubdivisionLevel;
+		}
+		"""
+
+	@classmethod
+	def uniformMaterialTES(cls):
+		return """
+		#version 400 core
+		layout(triangles, equal_spacing, ccw) in;
+
+		struct Material {
+			vec3 emission;
+			vec3 ambient;
+			vec3 diffuse;
+			vec3 specular;    
+			float shininess;
+		}; 
+
+		in vec3 positionES[];
+		in vec3 colorES[];
+
+		uniform mat4 modelMatrix;
+		uniform mat4 viewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform float radius;
+		uniform Material material;
+
+		smooth out vec4 vertexColor;
+
+		void main()
+		{
+			vec3 p0 = gl_TessCoord.x * positionES[0];
+			vec3 p1 = gl_TessCoord.y * positionES[1];
+			vec3 p2 = gl_TessCoord.z * positionES[2];
+
+			vec3 v = normalize(p0 + p1 + p2) * radius;
+			vec3 normal = v / radius;
+			
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+			vertexColor = vec4(material.diffuse, 1.0);
+
 		}
 		"""
 
@@ -321,7 +433,8 @@ class Shaders(QObject):
 			vec3 p2 = gl_TessCoord.z * positionES[2];
 
 			vec3 v = normalize(p0 + p1 + p2) * radius;
-			vertexNormal = viewMatrix * vec4(normalMatrix * v, 0.0);
+			vec3 normal = v / radius;
+			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
 
 			vertexPosition = vec4(v, 1);
 
@@ -338,8 +451,58 @@ class Shaders(QObject):
 
 		}
 		"""
-	
 
+	@classmethod
+	def uniformMaterialPhongFlatTES(cls):
+		return """
+		#version 400 core
+		layout(triangles, equal_spacing, ccw) in;
+
+		in vec3 positionES[];
+		in vec3 colorES[];
+
+		uniform mat4 modelMatrix;
+		uniform mat4 viewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform mat3 normalMatrix;
+		uniform vec4 lightPosition;
+		uniform vec3 lightAttenuation;
+		uniform float radius;
+
+
+		flat out vec4 vertexNormal;
+		smooth out vec4 vertexPosition;
+		smooth out vec3 lightDirection;
+		smooth out float attenuation;
+
+		void main()
+		{
+			vec3 p0 = gl_TessCoord.x * positionES[0];
+			vec3 p1 = gl_TessCoord.y * positionES[1];
+			vec3 p2 = gl_TessCoord.z * positionES[2];
+
+			vec3 v = normalize(p0 + p1 + p2) * radius;
+			vec3 normal = v / radius;
+			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
+
+			vertexPosition = vec4(v, 1);
+
+			if (lightPosition.w == 0.0) {
+				lightDirection = normalize(lightPosition.xyz);
+				attenuation = 1.0;
+			} else {
+		    	lightDirection = normalize(lightPosition.xyz - vertexPosition.xyz);
+		    	float distance = length(lightPosition.xyz - vertexPosition.xyz);
+		    	attenuation = 1.0 / (lightAttenuation.x + lightAttenuation.y * distance + lightAttenuation.z * distance * distance);
+		    }
+
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+
+		}
+		"""
+
+	
+#no tessellation
 	@classmethod
 	def uniformMaterialPhongVertexFlatShader(cls):
 		vertexShaderSource = """
@@ -607,7 +770,6 @@ class Shaders(QObject):
 
 	@classmethod
 	def attributeMaterialPhongVertexShader(cls):
-		#AQUIVERTEX
 		vertexShaderSource = """
 		#version 400
 		layout(location = 0) in vec3 position;
@@ -647,7 +809,6 @@ class Shaders(QObject):
 
 	@classmethod
 	def attributeMaterialPhongFragmentShader(cls):
-		#AQUIFRAGMENT
 		fragmentShaderSource = """
 		#version 400
 		struct Material {
@@ -1145,3 +1306,15 @@ class Shaders(QObject):
 
 	def uniformMaterialPhongTessellationShader(self):
 		return self.__instance._uniformMaterialPhongTessellationShader
+
+	def attributeColorPhongFlatTessellationShader(self):
+		return self.__instance._attributeColorPhongFlatTessellationShader
+
+	def attributeColorTessellationShader(self):
+		return self.__instance._attributeColorTessellationShader
+
+	def uniformMaterialPhongFlatTessellationShader(self):
+		return self.__instance._uniformMaterialPhongFlatTessellationShader
+	
+	def uniformMaterialTessellationShader(self):
+		return self.__instance._uniformMaterialTessellationShader

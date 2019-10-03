@@ -61,7 +61,7 @@ class Sphere(Actor):
                 z = self._radius * math.cos(theta) * math.cos(phi)
                 
                 vertices.append([x, y, z])
-                normals.append([x, y, z])
+                
 
                 if i != self._v and j != self._h:
                     if i != 0:
@@ -71,6 +71,9 @@ class Sphere(Actor):
                     k1 = k1+1
                     k2 = k2+1
                 
+                #normais e coord de textura
+                normal = [x/self._radius,y/self._radius,z/self._radius]
+                normals.append(normal)
                 s = j / self._h
                 t = i / self._v
                 texture.append([s, t])

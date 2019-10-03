@@ -17,14 +17,16 @@ class SphereTessellation(Actor):
         ## register shaders
         if self._rgb_colors:
             self.setSolidShader(self.shaderCollection.attributeColorPhongTessellationShader())
-            self.setSolidFlatShader(self.shaderCollection.attributeColorPhongFlatShader())
-            self.setNoLightSolidShader(self.shaderCollection.attributeColorShader())
+            self.setSolidFlatShader(self.shaderCollection.attributeColorPhongFlatTessellationShader())
+            self.setNoLightSolidShader(self.shaderCollection.attributeColorTessellationShader())
             self.setWireframeShader(self.shaderCollection.uniformMaterialPhongTessellationShader())
+            self.setNoLightWireframeShader(self.shaderCollection.uniformMaterialTessellationShader())
         else:
             self.setSolidShader(self.shaderCollection.uniformMaterialPhongTessellationShader())
-            self.setSolidFlatShader(self.shaderCollection.uniformMaterialPhongFlatShader())
-            self.setNoLightSolidShader(self.shaderCollection.uniformMaterialShader())
+            self.setSolidFlatShader(self.shaderCollection.uniformMaterialPhongFlatTessellationShader())
+            self.setNoLightSolidShader(self.shaderCollection.uniformMaterialTessellationShader())
             self.setWireframeShader(self.shaderCollection.uniformMaterialPhongTessellationShader())
+            self.setNoLightWireframeShader(self.shaderCollection.uniformMaterialTessellationShader())
         
 
         self._vertices = None
