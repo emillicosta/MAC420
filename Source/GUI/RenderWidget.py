@@ -37,17 +37,30 @@ class RenderWidget(QWidget):
         label = QLabel("Actor: ")
         self._bottomLayout.addWidget(label)
         self.actorCombo = QComboBox()
-        self.actorCombo.addItem("Cone", Renderer.ActorType.CONE)
-        self.actorCombo.addItem("Cube", Renderer.ActorType.CUBE)
+        self.actorCombo.addItem("Sphere", Renderer.ActorType.SPHERE)
+        self.actorCombo.addItem("Sphere Tessellation", Renderer.ActorType.SPHERETESSELLATION)
         self.actorCombo.addItem("Cylinder", Renderer.ActorType.CYLINDER)
         self.actorCombo.addItem("Floor", Renderer.ActorType.FLOOR)
         self.actorCombo.addItem("Icosahedron", Renderer.ActorType.ICOSAHEDRON)
         self.actorCombo.addItem("Pyramid 1", Renderer.ActorType.PYRAMID_1)
         self.actorCombo.addItem("Pyramid 2", Renderer.ActorType.PYRAMID_2)
-        self.actorCombo.addItem("Sphere", Renderer.ActorType.SPHERE)
-        self.actorCombo.addItem("Sphere Tessellation", Renderer.ActorType.SPHERETESSELLATION)
+        self.actorCombo.addItem("Cone", Renderer.ActorType.CONE)
+        self.actorCombo.addItem("Cube", Renderer.ActorType.CUBE)
+        
         self.actorCombo.currentIndexChanged.connect(self._renderer.changeActor)
         self._bottomLayout.addWidget(self.actorCombo)
+
+        # subdivision level spin
+        self.subdivisionLevelLayout_ = QHBoxLayout()               
+        label = QLabel("Subvision level: ")
+        self.subdivisionLevelLayout_.addWidget(label)
+        self.subdivisionLevelSpin_ = QSpinBox()
+        self.subdivisionLevelSpin_.setMinimum(1)
+        self.subdivisionLevelSpin_.setMaximum(15)
+        self.subdivisionLevelSpin_.setSingleStep(1)
+        self.subdivisionLevelSpin_.valueChanged.connect(self._renderer.setSubvisionLevel)
+        self.subdivisionLevelLayout_.addWidget(self.subdivisionLevelSpin_)
+        self._bottomLayout.addLayout(self.subdivisionLevelLayout_)
 
         ## register view functions
         self._viewFunc = [

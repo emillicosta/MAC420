@@ -326,10 +326,11 @@ class Actor(QObject):
         """Update the GPU with new buffer contents"""
         self._vbo.unmap()
 
-    def setInnerSubdivisionLevel(self, val):
-        self.innerSubdivisionLevel_ = val
+    def setSubdivisionLevel(self, val):
+        self._subdivisionLevel = val
         self._active_shader.bind()
         self._active_shader.setUniformValue("innerSubdivisionLevel", val)
+        self._active_shader.setUniformValue("outerSubdivisionLevel", val)
         self._active_shader.release()
 
 

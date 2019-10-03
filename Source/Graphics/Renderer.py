@@ -32,15 +32,15 @@ from enum import IntEnum
 class Renderer(QOpenGLWidget):
 
     class ActorType(IntEnum):
-        CONE = 0,  
-        CUBE = 1,
+        CONE = 7,  
+        CUBE = 8,
         CYLINDER = 2,
         FLOOR = 3, 
         ICOSAHEDRON = 4, 
         PYRAMID_1 = 5, 
         PYRAMID_2 = 6,
-        SPHERE = 7,
-        SPHERETESSELLATION = 8
+        SPHERE = 0,
+        SPHERETESSELLATION = 1
 
     ## initialization
     def __init__(self, parent=None, **kwargs):
@@ -153,7 +153,7 @@ class Renderer(QOpenGLWidget):
             ###
             ### Add an object to the scene
             ###
-            self.currentActor_ = SphereTessellation(self._world, subdivisionLevel=10, radius=1.0) 
+            self.currentActor_ = Sphere(self._world) 
             self._world.addActor(self.currentActor_)
             ###
 
@@ -465,6 +465,11 @@ class Renderer(QOpenGLWidget):
     def _pixelPosToViewPos(self, point):
         return QPointF(2.0 * float(point.x()) / self.width() - 1.0, 1.0 - 2.0 * float(point.y()) / self.height())
 
+    def setSubvisionLevel(self, val):
+        self.makeCurrent()
+        self.currentActor_.setSubdivisionLevel(val)
+        self.update()
+
     def changeActor(self, index):
         self.makeCurrent()
         self.currentActor_.destroy()
@@ -491,7 +496,7 @@ class Renderer(QOpenGLWidget):
         elif index == Renderer.ActorType.SPHERE:
             self.currentActor_ = Sphere(self._world)
         elif index == Renderer.ActorType.SPHERETESSELLATION:
-            self.currentActor_ = SphereTessellation(self._world, subdivisionLevel=5)
+            self.currentActor_ = SphereTessellation(self._world)
 
         self._world.addActor(self.currentActor_)
         
