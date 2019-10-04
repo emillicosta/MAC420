@@ -92,6 +92,7 @@ class Actor(QObject):
         """Update this node"""
         self._transform = kwargs.get("transform", QMatrix4x4())
         self._subdivisionLevel = kwargs.get("subdivisionLevel", 1)
+        self._radius = kwargs.get("radius", 1.0)
         self._render_mode = kwargs.get("mode", Actor.RenderMode.Triangles)
         self._render_type = kwargs.get("type", Actor.RenderType.Solid)
         self._material = kwargs.get("material", Material())
@@ -332,6 +333,15 @@ class Actor(QObject):
         self._active_shader.setUniformValue("innerSubdivisionLevel", val)
         self._active_shader.setUniformValue("outerSubdivisionLevel", val)
         self._active_shader.release()
+
+    def setRadius(self, val):
+        self._radius = val
+        self._active_shader.bind()
+        self._active_shader.setUniformValue("radius", val)
+        self._active_shader.release()
+    
+    def getRadius(self):
+        return self._radius
 
 
     def updateBuffer(self, vertices=None, normals=None, colors=None, texcoords=None):

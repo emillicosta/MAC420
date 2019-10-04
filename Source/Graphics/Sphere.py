@@ -10,9 +10,9 @@ class Sphere(Actor):
         """Initialize actor."""
         super(Sphere, self).__init__(renderer, **kwargs)
 
-        self._radius = kwargs.get("radius", 1.0)
-        self._v = kwargs.get("v", 30)
-        self._h = kwargs.get("h", 30)
+        self._radius = self.getRadius()
+        self._v = kwargs.get("v", 10)
+        self._h = kwargs.get("h", 10)
         self._rgb_colors = kwargs.get("colors", False)
 
         self._hStep = 2 * math.pi / self._h

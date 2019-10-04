@@ -153,8 +153,13 @@ class Renderer(QOpenGLWidget):
             ###
             ### Add an object to the scene
             ###
-            self.currentActor_ = Sphere(self._world) 
+            self.currentActor_ = Sphere(self._world)
             self._world.addActor(self.currentActor_)
+            self._sub = 1
+            self._radius = 1.0
+            self._v = 10
+            self._h = 10
+            self._indexActor = 0
             ###
 
 
@@ -466,11 +471,25 @@ class Renderer(QOpenGLWidget):
         return QPointF(2.0 * float(point.x()) / self.width() - 1.0, 1.0 - 2.0 * float(point.y()) / self.height())
 
     def setSubvisionLevel(self, val):
+        self._sub = val
         self.makeCurrent()
         self.currentActor_.setSubdivisionLevel(val)
         self.update()
 
+    def setRadius(self, val):
+        self._radius = val
+        self.changeActor(self._indexActor)
+
+    def setH(self, val):
+        self._h = val
+        self.changeActor(self._indexActor)
+
+    def setV(self, val):
+        self._v = val
+        self.changeActor(self._indexActor)
+
     def changeActor(self, index):
+        self._indexActor = index
         self.makeCurrent()
         self.currentActor_.destroy()
         self._world.removeActor(self.currentActor_)
@@ -494,9 +513,9 @@ class Renderer(QOpenGLWidget):
         elif index == Renderer.ActorType.PYRAMID_2:
             self.currentActor_ = PyramidTwo.Pyramid(self._world)
         elif index == Renderer.ActorType.SPHERE:
-            self.currentActor_ = Sphere(self._world)
+            self.currentActor_ = Sphere(self._world, radius=self._radius, h=self._h, v=self._v)
         elif index == Renderer.ActorType.SPHERETESSELLATION:
-            self.currentActor_ = SphereTessellation(self._world)
+            self.currentActor_ = SphereTessellation(self._world, subdivisionLevel= self._sub, radius=self._radius)
 
         self._world.addActor(self.currentActor_)
         
