@@ -111,6 +111,49 @@ class Cube(Actor):
             0.0,  1.0,  0.0,
             0.0,  1.0,  0.0], dtype=np.float32)
 
+        self._colors = np.array([
+            1, 0, 0,  
+            1, 0, 0, 
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0, 
+            1, 0, 0,  
+
+            1, 0, 0, 
+            1, 0, 0, 
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0, 
+
+            1, 0, 0, 
+            1, 0, 0, 
+            1, 0, 0, 
+            1, 0, 0, 
+            1, 0, 0, 
+            1, 0, 0, 
+
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0, 
+            1, 0, 0,  
+
+            1, 0, 0, 
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0,  
+
+            1, 0, 0,  
+            1, 0, 0, 
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0,  
+            1, 0, 0], dtype=np.float32)
+
 
     def initialize(self):
         """Creates cube's geometry"""
@@ -118,7 +161,8 @@ class Cube(Actor):
             self.generateGeometry()
 
         ## create object
-        self.create(self._vertices, normals=self._normals)
+        print(self._vertices)
+        self.create(self._vertices, normals=self._normals, colors=self._colors)
 
 
     def render(self):

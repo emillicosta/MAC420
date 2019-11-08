@@ -180,6 +180,8 @@ class Shaders(QObject):
 		#version 400 core
 		layout(triangles, equal_spacing, ccw) in;
 
+		const float PI = 3.14159265;
+
 		in vec3 positionES[];
 		in vec3 colorES[];
 
@@ -197,11 +199,14 @@ class Shaders(QObject):
 			vec3 p1 = gl_TessCoord.y * positionES[1];
 			vec3 p2 = gl_TessCoord.z * positionES[2];
 
-			vec3 v = normalize(p0 + p1 + p2) * radius;
-			vec3 normal = v / radius;
+			vec3 p = normalize(p0 + p1 + p2) * radius;
+			vec3 normal = p / radius;
+
+			float u = 0.5 + (atan(p.z, p.x)) / (2*PI);
+			float v = 0.5 + - asin(p.y)/PI;
 
 
-			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1);
 
 
 			vec3 c0 = gl_TessCoord.x * colorES[0];
@@ -217,6 +222,8 @@ class Shaders(QObject):
 		return """
 		#version 400 core
 		layout(triangles, equal_spacing, ccw) in;
+
+		const float PI = 3.14159265;
 
 		in vec3 positionES[];
 		in vec3 colorES[];
@@ -242,11 +249,14 @@ class Shaders(QObject):
 			vec3 p1 = gl_TessCoord.y * positionES[1];
 			vec3 p2 = gl_TessCoord.z * positionES[2];
 
-			vec3 v = normalize(p0 + p1 + p2) * radius;
-			vec3 normal = v / radius;
-			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
+			vec3 p = normalize(p0 + p1 + p2) * radius;
+			vec3 normal = p / radius;
 
-			vertexPosition = vec4(v, 1);
+			float u = 0.5 + (atan(p.z, p.x)) / (2*PI);
+			float v = 0.5 + - asin(p.y)/PI;
+
+			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
+			vertexPosition = vec4(p, 1);
 
 			if (lightPosition.w == 0.0) {
 				lightDirection = normalize(lightPosition.xyz);
@@ -257,7 +267,7 @@ class Shaders(QObject):
 		    	attenuation = 1.0 / (lightAttenuation.x + lightAttenuation.y * distance + lightAttenuation.z * distance * distance);
 		    }
 
-			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
+			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1);
 
 
 			vec3 c0 = gl_TessCoord.x * colorES[0];
@@ -273,6 +283,8 @@ class Shaders(QObject):
 		return """
 		#version 400 core
 		layout(triangles, equal_spacing, ccw) in;
+
+		const float PI = 3.14159265;
 
 		in vec3 positionES[];
 		in vec3 colorES[];
@@ -300,6 +312,10 @@ class Shaders(QObject):
 
 			vec3 v = normalize(p0 + p1 + p2) * radius;
 			vec3 normal = v / radius;
+
+			float s = 0.5 + (atan(v.z, v.x)) / (2*PI);
+			float t = 0.5 + - asin(v.y)/PI;
+
 			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
 
 			vertexPosition = vec4(v, 1);
@@ -369,6 +385,8 @@ class Shaders(QObject):
 		#version 400 core
 		layout(triangles, equal_spacing, ccw) in;
 
+		const float PI = 3.14159265;
+
 		struct Material {
 			vec3 emission;
 			vec3 ambient;
@@ -396,6 +414,9 @@ class Shaders(QObject):
 
 			vec3 v = normalize(p0 + p1 + p2) * radius;
 			vec3 normal = v / radius;
+
+			float s = 0.5 + (atan(v.z, v.x)) / (2*PI);
+			float t = 0.5 + - asin(v.y)/PI;
 			
 			gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(v, 1);
 			vertexColor = vec4(material.diffuse, 1.0);
@@ -408,6 +429,8 @@ class Shaders(QObject):
 		return """
 		#version 400 core
 		layout(triangles, equal_spacing, ccw) in;
+
+		const float PI = 3.14159265;
 
 		in vec3 positionES[];
 		in vec3 colorES[];
@@ -436,6 +459,9 @@ class Shaders(QObject):
 			vec3 normal = v / radius;
 			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
 
+			float s = 0.5 + (atan(v.z, v.x)) / (2*PI);
+			float t = 0.5 + - asin(v.y)/PI;
+
 			vertexPosition = vec4(v, 1);
 
 			if (lightPosition.w == 0.0) {
@@ -457,6 +483,8 @@ class Shaders(QObject):
 		return """
 		#version 400 core
 		layout(triangles, equal_spacing, ccw) in;
+
+		const float PI = 3.14159265;
 
 		in vec3 positionES[];
 		in vec3 colorES[];
@@ -484,6 +512,9 @@ class Shaders(QObject):
 			vec3 v = normalize(p0 + p1 + p2) * radius;
 			vec3 normal = v / radius;
 			vertexNormal = viewMatrix * vec4(normalMatrix * normal, 0.0);
+
+			float s = 0.5 + (atan(v.z, v.x)) / (2*PI);
+			float t = 0.5 + - asin(v.y)/PI;
 
 			vertexPosition = vec4(v, 1);
 

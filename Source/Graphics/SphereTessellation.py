@@ -12,7 +12,7 @@ class SphereTessellation(Actor):
 
         self._level = kwargs.get("level", 30)
         self._radius = kwargs.get("radius", 1.0)
-        self._rgb_colors = kwargs.get("colors", True)
+        self._rgb_colors = kwargs.get("colors", False)
 
         ## register shaders
         if self._rgb_colors:

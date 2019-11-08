@@ -24,6 +24,7 @@ from Source.Graphics.Icosahedron import Icosahedron
 from Source.Graphics.Floor import Floor
 from Source.Graphics.Sphere import Sphere
 from Source.Graphics.SphereTessellation import SphereTessellation
+from Source.Graphics.Obj import Obj
 import Source.Graphics.PyramidOne as PyramidOne
 import Source.Graphics.PyramidTwo as PyramidTwo
 
@@ -32,20 +33,24 @@ from enum import IntEnum
 class Renderer(QOpenGLWidget):
 
     class ActorType(IntEnum):
-        CONE = 7,  
-        CUBE = 8,
+        SPHERE = 0,
+        SPHERETESSELLATION = 1
         CYLINDER = 2,
         FLOOR = 3, 
         ICOSAHEDRON = 4, 
         PYRAMID_1 = 5, 
         PYRAMID_2 = 6,
-        SPHERE = 0,
-        SPHERETESSELLATION = 1
+        CONE = 7,  
+        CUBE = 8,
+        OBJ = 9,
+        
 
     ## initialization
     def __init__(self, parent=None, **kwargs):
         """Initialize OpenGL version profile."""
         super(Renderer, self).__init__(parent)
+
+        self.setFocusPolicy(Qt.StrongFocus)
 
         self._parent = parent
 
@@ -153,7 +158,7 @@ class Renderer(QOpenGLWidget):
             ###
             ### Add an object to the scene
             ###
-            self.currentActor_ = Sphere(self._world)
+            self.currentActor_ = Obj(self._world)
             self._world.addActor(self.currentActor_)
             self._sub = 1
             self._radius = 1.0
@@ -275,11 +280,15 @@ class Renderer(QOpenGLWidget):
             direction = QVector3D(-delta.dx(), -delta.dy(), 0.0).normalized()
             newpos = self._world.camera.position + delta.length()*2.0 * direction
             self._world.camera.setPosition(newpos)
-    
+
+
 
     def mousePressEvent(self, event):
         """ Called by the Qt libraries whenever the window receives a mouse click."""
         super(Renderer, self).mousePressEvent(event)
+        
+        if event.buttons()== Qt.LeftButton and QApplication.keyboardModifiers() == Qt.ShiftModifier:
+            print(event.x())
         
         if event.isAccepted():
             return
@@ -499,13 +508,12 @@ class Renderer(QOpenGLWidget):
             xform.translate(0, 1, 0)
             self.currentActor_ = Cone(self._world)
         elif index == Renderer.ActorType.CUBE:            
-            xform.translate(0, 0.5, 0)
+            xform.translate(0, 0, 0)
             self.currentActor_ = Cube(self._world, transform=xform)
         elif index == Renderer.ActorType.CYLINDER:
-            xform.translate(0, 1, 0)
-            self.currentActor_ = Cylinder(self._world, transform=xform)
+            self.currentActor_ = Cylinder(self._world)
         elif index == Renderer.ActorType.FLOOR:            
-            self.currentActor_ = Floor(self._world, transform=xform)
+            self.currentActor_ = Floor(self._world)
         elif index == Renderer.ActorType.ICOSAHEDRON:
             self.currentActor_ = Icosahedron(self._world)
         elif index == Renderer.ActorType.PYRAMID_1:
@@ -516,6 +524,8 @@ class Renderer(QOpenGLWidget):
             self.currentActor_ = Sphere(self._world, radius=self._radius, h=self._h, v=self._v)
         elif index == Renderer.ActorType.SPHERETESSELLATION:
             self.currentActor_ = SphereTessellation(self._world, subdivisionLevel= self._sub, radius=self._radius)
+        elif index == Renderer.ActorType.OBJ:
+            self.currentActor_ = Obj(self._world)
 
         self._world.addActor(self.currentActor_)
         
