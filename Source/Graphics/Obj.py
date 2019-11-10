@@ -38,7 +38,6 @@ class Obj(Actor):
         self._vertices = None
         self._normals = None
         self._texcoords = None
-        self._faces = None
         self._colors = None
         self._rgb_colors = True
 
@@ -46,7 +45,7 @@ class Obj(Actor):
             self.setSolidShader(self.shaderCollection.attributeColorPhongShader())
             self.setSolidFlatShader(self.shaderCollection.attributeColorPhongFlatShader())
             self.setNoLightSolidShader(self.shaderCollection.attributeColorShader())
-            self.setWireframeShader(self.shaderCollection.uniformMaterialShader())
+            self.setWireframeShader(self.shaderCollection.attributeColorPhongShader())
 
         ## create actor
         self.initialize()

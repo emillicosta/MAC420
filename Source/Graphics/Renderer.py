@@ -15,6 +15,7 @@ from Source.Graphics.Actor import Actor
 from Source.Graphics.Group import Group
 from Source.Graphics.Gnomon import Gnomon
 from Source.Graphics.World import World
+from Source.Graphics.Shaders import Shaders
 
 # import actors
 from Source.Graphics.Cone import Cone
@@ -283,12 +284,49 @@ class Renderer(QOpenGLWidget):
 
 
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self._world.selectActor(None)
+            self._world.highlightActor(None)
+        
+        if event.key() == Qt.Key_Delete or event.text() in ("x", "X"):
+            new_actor = self._world.selectedActor()
+            if new_actor is not None:
+                self._world.selectActor(None)
+                self._world.highlightActor(None)
+
+                self._world.removeActor(new_actor)
+
+
     def mousePressEvent(self, event):
         """ Called by the Qt libraries whenever the window receives a mouse click."""
         super(Renderer, self).mousePressEvent(event)
         
+        if event.buttons() == Qt.LeftButton:
+            point = self._pixelPosToViewPos(event.localPos())
+            new_actor = self._world.pick(point)[0]
+
+            if new_actor == None:
+                self._world.selectActor(new_actor)
+                self._world.highlightActor(new_actor)                                
+
+
         if event.buttons()== Qt.LeftButton and QApplication.keyboardModifiers() == Qt.ShiftModifier:
-            print(event.x())
+            point = self._pixelPosToViewPos(event.localPos())
+            new_actor = self._world.pick(point)[0]
+
+            self._world.selectActor(new_actor)
+            self._world.highlightActor(new_actor)
+                
+            #ray_clip = QVector4D(point.x(), point.y(), -1.0, 1.0)
+            #camera = self._world.camera
+            #invProjMat= QMatrix4x4(camera.projectionMatrix.data()).inverted()[0]
+            #ray_eye = invProjMat * ray_clip
+            #ray_eye = QVector4D(ray_eye.x(),ray_eye.y(), -1.0, 0.0);
+            #ray_wor = QVector3D(QMatrix4x4(camera.viewMatrix.data()).inverted()[0] * ray_eye)
+            #ray_wor = ray_wor.normalized()
+            #print(self._world.actors())
+            ##acho que é aqui que tenho que gerar o raio
         
         if event.isAccepted():
             return

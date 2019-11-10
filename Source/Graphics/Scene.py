@@ -273,8 +273,9 @@ class Scene(QObject):
             if each.isPickable():
                 #print("inspecting actor: ", each.name)
                 hit = each.intersect(ray)
-                if hit[0] and hit[1] < distance:
-                    result = (each, None); distance = hit[1]
+                if hit[0]:
+                    if hit[1] < distance:
+                        result = (each, None); distance = hit[1]
 
                 ## inspect group
                 if isinstance(each, Group):
