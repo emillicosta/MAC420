@@ -161,7 +161,6 @@ class Cube(Actor):
             self.generateGeometry()
 
         ## create object
-        print(self._vertices)
         self.create(self._vertices, normals=self._normals, colors=self._colors)
 
 

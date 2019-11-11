@@ -65,6 +65,10 @@ class Renderer(QOpenGLWidget):
 
         ## define scene trackball
         self._trackball = Trackball(velocity=0.05, axis=QVector3D(0.0, 1.0, 0.0), mode=Trackball.TrackballMode.Planar, rotation=self._home_rotation, paused=True)
+
+        ## define actor trackball
+        self._actor_rotation = QQuaternion.fromAxisAndAngle(QVector3D(1.0, 0.0, 0.0), 1.0) * QQuaternion.fromAxisAndAngle(QVector3D(0.0, 1.0, 0.0), -1.0) * QQuaternion.fromAxisAndAngle(QVector3D(0.0, 0.0, 1.0), -1.0)
+        self._trackball_actor = Trackball(velocity=0.01, axis=QVector3D(1.0, 0.0, 0.0), mode=Trackball.TrackballMode.Planar, rotation=self._actor_rotation, paused=True)
         
         ## create main scene
         self._world = World(self, home_position=QVector3D(0, 0, 3.5))
@@ -78,6 +82,9 @@ class Renderer(QOpenGLWidget):
         self.setAutoFillBackground(False)
 
         self.currentActor_ = None
+
+        self._transform = None
+        self._eixo = None
 
 
     def printOpenGLInformation(self, format, verbosity=0):
@@ -288,14 +295,31 @@ class Renderer(QOpenGLWidget):
         if event.key() == Qt.Key_Escape:
             self._world.selectActor(None)
             self._world.highlightActor(None)
+            self._transform = None
+            self._eixo = None
         
-        if event.key() == Qt.Key_Delete or event.text() in ("x", "X"):
-            new_actor = self._world.selectedActor()
-            if new_actor is not None:
-                self._world.selectActor(None)
-                self._world.highlightActor(None)
+        new_actor = self._world.selectedActor()
 
-                self._world.removeActor(new_actor)
+        if self._transform == None:
+            if event.key() == Qt.Key_Delete or event.text() in ("x", "X"):
+                if new_actor is not None:
+                    self._world.selectActor(None)
+                    self._world.highlightActor(None)
+                    self._transform = None
+                    self._eixo = None
+                    self._world.removeActor(new_actor)
+        elif event.text() in ("x", "X", "y", "Y", "z", "Z"):
+            self._eixo = event.text()
+
+        if event.text() in ("s", "S") and new_actor is not None:
+            self._transform = event.text()
+            print("escala")
+        elif event.text() in ("t", "T") and new_actor is not None:
+            self._transform = event.text()
+            print("translação")
+        elif event.text() in ("r", "R") and new_actor is not None:
+            self._transform = event.text()
+            print("rotação")
 
 
     def mousePressEvent(self, event):
@@ -308,7 +332,9 @@ class Renderer(QOpenGLWidget):
 
             if new_actor == None:
                 self._world.selectActor(new_actor)
-                self._world.highlightActor(new_actor)                                
+                self._world.highlightActor(new_actor)    
+                self._transform = None
+                self._eixo = None                            
 
 
         if event.buttons()== Qt.LeftButton and QApplication.keyboardModifiers() == Qt.ShiftModifier:
@@ -327,62 +353,101 @@ class Renderer(QOpenGLWidget):
             #ray_wor = ray_wor.normalized()
             #print(self._world.actors())
             ##acho que é aqui que tenho que gerar o raio
-        
-        if event.isAccepted():
-            return
+        if self._world.selectedActor() is None:
+            if event.isAccepted():
+                return
 
-        if event.buttons() & Qt.LeftButton:
-            self._trackball.press(self._pixelPosToViewPos(event.localPos()), QQuaternion())
-            self._trackball.start()
-            event.accept()
-            if not self.isAnimating():
+            if event.buttons() & Qt.LeftButton:
+                self._trackball.press(self._pixelPosToViewPos(event.localPos()), QQuaternion())
+                self._trackball.start()
+                event.accept()
+                if not self.isAnimating():
+                    self.update()
+
+            elif event.buttons() & Qt.RightButton:
+                self.pan(self._pixelPosToViewPos(event.localPos()), state='start')
                 self.update()
-
-        elif event.buttons() & Qt.RightButton:
-            self.pan(self._pixelPosToViewPos(event.localPos()), state='start')
-            self.update()
 
 
     def mouseMoveEvent(self, event):
         """Called by the Qt libraries whenever the window receives a mouse move/drag event."""
         super(Renderer, self).mouseMoveEvent(event)
-        
-        if event.isAccepted():
-            return
+        if self._world.selectedActor() is None:
+            if event.isAccepted():
+                return
 
-        if event.buttons() & Qt.LeftButton:
-            self._trackball.move(self._pixelPosToViewPos(event.localPos()), QQuaternion())
-            event.accept()
-            if not self.isAnimating():
+            if event.buttons() & Qt.LeftButton:
+                self._trackball.move(self._pixelPosToViewPos(event.localPos()), QQuaternion())
+                event.accept()
+                if not self.isAnimating():
+                    self.update()
+
+            elif event.buttons() & Qt.RightButton:
+                self.pan(self._pixelPosToViewPos(event.localPos()), state='move')
                 self.update()
-
-        elif event.buttons() & Qt.RightButton:
-            self.pan(self._pixelPosToViewPos(event.localPos()), state='move')
-            self.update()
+        else: 
+            if event.buttons() & Qt.LeftButton:
+                actor = self._world.selectedActor()
+                xform = QMatrix4x4()
+                if self._transform in ("T", "t") and self._eixo is not None:
+                    point = self._pixelPosToViewPos(event.localPos())
+                    if self._eixo in ("x", "X"):
+                        xform.translate(point.x(), 0, 0)
+                    elif self._eixo in ("y", "Y"):
+                        xform.translate(0, point.y(), 0)
+                    else:
+                        xform.translate(0, 0, point.y())
+                    xform = actor.transform() * xform
+                    actor.update(transform=xform)
+                elif self._transform in ("r", "R"):
+                    self._trackball_actor.move(self._pixelPosToViewPos(event.localPos()), QQuaternion())
+                    quaternion = self._trackball_actor.rotation()
+                    xform.rotate(quaternion)
+                    #xform[0,0] = 0; xform[0,1] = -1.0
+                    #xform[1,0] = 1.0; xform[1,1] = 0
+                    xform = actor.transform() * xform
+                    actor.update(transform=xform)
 
 
     def mouseReleaseEvent(self, event):
         """ Called by the Qt libraries whenever the window receives a mouse release."""
         super(Renderer, self).mouseReleaseEvent(event)
+        if self._world.selectedActor() is None:
+            if event.isAccepted():
+                return
+
+            if event.button() == Qt.LeftButton:
+                self._trackball.release(self._pixelPosToViewPos(event.localPos()), QQuaternion())
+                event.accept()
+                if not self.isAnimating():
+                    self._trackball.stop()
+                    self.update()
         
-        if event.isAccepted():
-            return
-
-        if event.button() == Qt.LeftButton:
-            self._trackball.release(self._pixelPosToViewPos(event.localPos()), QQuaternion())
-            event.accept()
-            if not self.isAnimating():
-                self._trackball.stop()
-                self.update()
-
+        
 
     def wheelEvent(self, event):
         """Process mouse wheel movements"""
         super(Renderer, self).wheelEvent(event)
-        self.zoom(-event.angleDelta().y() / 950.0)
-        event.accept()
-        ## scene is dirty, please update
-        self.update()
+        if self._world.selectedActor() is None:
+            self.zoom(-event.angleDelta().y() / 950.0)
+            event.accept()
+            ## scene is dirty, please update
+            self.update()
+        else:
+            if self._transform in ("s", "S"):
+                actor = self._world.selectedActor()
+                xform = QMatrix4x4() 
+                factorscale =  math.exp(-event.angleDelta().y() / 950.0)
+                if self._eixo is None:
+                    xform.scale(factorscale)
+                elif self._eixo in ("x", "X"):
+                    xform.scale(factorscale, 1, 1)
+                elif self._eixo in ("y", "Y"):
+                    xform.scale(1, factorscale, 1)
+                elif self._eixo in ("z", "Z"):
+                    xform.scale(1, 1, factorscale)
+                xform = actor.transform() * xform
+                actor.update(transform=xform)
 
 
     def zoom(self, diffvalue):
@@ -538,8 +603,8 @@ class Renderer(QOpenGLWidget):
     def changeActor(self, index):
         self._indexActor = index
         self.makeCurrent()
-        self.currentActor_.destroy()
-        self._world.removeActor(self.currentActor_)
+        #self.currentActor_.destroy()
+        #self._world.removeActor(self.currentActor_)
 
         xform = QMatrix4x4()        
         if index  == Renderer.ActorType.CONE:

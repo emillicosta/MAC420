@@ -85,7 +85,7 @@ class Actor(QObject):
         self._warningMaterial = Material.gold()
         self._warningHighlight = False
         
-        self._pickFactor = 1.0
+        self._pickFactor = 1.5
 
 
     def update(self, **kwargs):
