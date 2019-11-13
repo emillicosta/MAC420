@@ -35,16 +35,20 @@ from enum import IntEnum
 class Renderer(QOpenGLWidget):
 
     class ActorType(IntEnum):
-        SPHERE = 0,
-        SPHERETESSELLATION = 1
-        CYLINDER = 2,
-        FLOOR = 3, 
-        ICOSAHEDRON = 4, 
-        PYRAMID_1 = 5, 
-        PYRAMID_2 = 6,
-        CONE = 7,  
-        CUBE = 8,
-        OBJ = 9,
+        OBJ1 = 0,
+        OBJ2 = 1,
+        OBJ3 = 2,
+        OBJ4 = 3,
+        OBJ5 = 4,
+        OBJ6 = 5,
+        OBJ7 = 6,
+        OBJ8 = 7,
+        OBJ9 = 8,
+        OBJ10 = 9,
+        OBJ11 = 10,
+        OBJ12 = 11,
+        OBJ13 = 12,
+        OBJ14 = 13
         
 
     ## initialization
@@ -341,12 +345,12 @@ class Renderer(QOpenGLWidget):
             self._world.removeActor(self._gizmos)
             self._gizmos = None 
         size = new_actor.size()
-        center = new_actor.center()*10
+        center = new_actor.center()
         xform = QMatrix4x4()
         xform.translate(center.x(), center.y(), center.z())
         xform.scale(size.x(), size.y(), size.z())
         transf = new_actor.transform()
-        transf = transf *xform
+        transf = transf * xform
         self.makeCurrent()
         self._gizmos = Gizmos(self._world, transform=transf, eixo=self._eixo)
         self._world.addActor(self._gizmos)
@@ -651,32 +655,36 @@ class Renderer(QOpenGLWidget):
     def changeActor(self, index):
         self._indexActor = index
         self.makeCurrent()
-        #self.currentActor_.destroy()
-        #self._world.removeActor(self.currentActor_)
+        
+        if index == Renderer.ActorType.OBJ1:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/1.obj")
+        elif index == Renderer.ActorType.OBJ2:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/2.obj")
+        elif index == Renderer.ActorType.OBJ3:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/3.obj")
+        elif index == Renderer.ActorType.OBJ4:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/4.obj")
+        elif index == Renderer.ActorType.OBJ5:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/5.obj")
+        elif index == Renderer.ActorType.OBJ6:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/6.obj")
+        elif index == Renderer.ActorType.OBJ7:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/7.obj")
+        elif index == Renderer.ActorType.OBJ8:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/8.obj")
+        elif index == Renderer.ActorType.OBJ9:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/9.obj")
+        elif index == Renderer.ActorType.OBJ10:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/10.obj")
+        elif index == Renderer.ActorType.OBJ11:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/11.obj")
+        elif index == Renderer.ActorType.OBJ12:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/12.obj")
+        elif index == Renderer.ActorType.OBJ13:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/13.obj")
+        elif index == Renderer.ActorType.OBJ14:
+            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/2.obj")
 
-        xform = QMatrix4x4()        
-        if index  == Renderer.ActorType.CONE:
-            xform.translate(0, 1, 0)
-            self.currentActor_ = Cone(self._world)
-        elif index == Renderer.ActorType.CUBE:            
-            xform.translate(0, 0, 0)
-            self.currentActor_ = Cube(self._world, transform=xform)
-        elif index == Renderer.ActorType.CYLINDER:
-            self.currentActor_ = Cylinder(self._world)
-        elif index == Renderer.ActorType.FLOOR:            
-            self.currentActor_ = Floor(self._world)
-        elif index == Renderer.ActorType.ICOSAHEDRON:
-            self.currentActor_ = Icosahedron(self._world)
-        elif index == Renderer.ActorType.PYRAMID_1:
-            self.currentActor_ = PyramidOne.Pyramid(self._world)
-        elif index == Renderer.ActorType.PYRAMID_2:
-            self.currentActor_ = PyramidTwo.Pyramid(self._world)
-        elif index == Renderer.ActorType.SPHERE:
-            self.currentActor_ = Sphere(self._world, radius=self._radius, h=self._h, v=self._v)
-        elif index == Renderer.ActorType.SPHERETESSELLATION:
-            self.currentActor_ = SphereTessellation(self._world, subdivisionLevel= self._sub, radius=self._radius)
-        elif index == Renderer.ActorType.OBJ:
-            self.currentActor_ = Obj(self._world)
 
         self._world.addActor(self.currentActor_)
         

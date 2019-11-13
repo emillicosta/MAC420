@@ -32,7 +32,7 @@ class Obj(Actor):
     def __init__(self, scene,  **kwargs):
         """Initialize actor."""
         super(Obj, self).__init__(scene, mode=Actor.RenderMode.Triangles, **kwargs)
-        self._filename = kwargs.get("filename", "obj-models/buildings/2.obj")
+        self._filename = kwargs.get("filename", "obj-models/buildings/1.obj")
         fn = self._filename.split('.')
         self._filename = fn[0]
 
@@ -122,21 +122,38 @@ class Obj(Actor):
                 color = getMaterial(self._filename, values[1])
             elif values[0] == 'f':
                 face = []
+                text = []
+                norm = []
                 if len(values[1:]) == 4:
                     for v in values[1:]:
                         w = v.split('/')
                         face.append(int(w[0])-1)
-                        colors[int(w[0])-1] = color
+                        colors.append(color)
                         if len(w) >= 2 and len(w[1]) > 0:
-                            texture[int(w[0])-1] = t[int(w[1]) -1]
+                            text.append(t[int(w[1]) -1])
                         if len(w) >= 3 and len(w[2]) > 0:
-                            normals[int(w[0])-1] = n[int(w[2])-1]
+                            norm.append(n[int(w[2])-1])
                     vertices.append(v_[face[0]])
+                    texture.append(text[0])
+                    normals.append(norm[0])
                     vertices.append(v_[face[1]]) 
+                    texture.append(text[1])
+                    normals.append(norm[1])
                     vertices.append(v_[face[2]])
+                    texture.append(text[2])
+                    normals.append(norm[2])
                     vertices.append(v_[face[2]]) 
+                    texture.append(text[2])
+                    normals.append(norm[2])
                     vertices.append(v_[face[3]]) 
+                    texture.append(text[3])
+                    normals.append(norm[3])
                     vertices.append(v_[face[0]])
+                    texture.append(text[0])
+                    normals.append(norm[0])
+                    colors.append(color)
+                    colors.append(color)
+
                     #falta ver as normais
                 else:
                     for v in values[1:]:

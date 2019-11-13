@@ -125,7 +125,7 @@ class Actor(QObject):
 
     def setCenter(self):
         if self._pointMax is not None and self._pointMin is not None:
-            self._center = QVector3D(self._pointMax+self._pointMin)/20
+            self._center = QVector3D(self._pointMax+self._pointMin)/2
 
     def setSize(self):
         if self._pointMax is not None and self._pointMin is not None:
@@ -652,8 +652,8 @@ class Actor(QObject):
         tMax = math.inf
         
         xform = QMatrix4x4()
-        xform.scale(self._size.x(), self._size.y(), self._size.z())
         xform.translate(self._center.x(), self._center.y(), self._center.z())
+        xform.scale(self._size.x(), self._size.y(), self._size.z())
 
         obb_xform = self._transform
         obb_xform = obb_xform * xform
