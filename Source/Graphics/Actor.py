@@ -72,6 +72,10 @@ class Actor(QObject):
         self._hasIndices = False
 
         self._texture = None
+        self._pointMax = None
+        self._pointMin = None
+        self._center = QVector3D(0,0,0)
+        self._size = QVector3D(1.0,1.0,1.0)
 
         #self._bbox = None
         self._visible = True
@@ -85,7 +89,7 @@ class Actor(QObject):
         self._warningMaterial = Material.gold()
         self._warningHighlight = False
         
-        self._pickFactor = 1.5
+        self._pickFactor = 1.0
 
 
     def update(self, **kwargs):
@@ -112,6 +116,28 @@ class Actor(QObject):
     def setName(self, name):
         """Sets this actor's name"""
         self._name = name
+
+    def setPointMin(self, pointMin):
+        self._pointMin = pointMin
+
+    def setPointMax(self, pointMax):
+        self._pointMax = pointMax
+
+    def setCenter(self):
+        if self._pointMax is not None and self._pointMin is not None:
+            self._center = QVector3D(self._pointMax+self._pointMin)/20
+
+    def setSize(self):
+        if self._pointMax is not None and self._pointMin is not None:
+            self._size = QVector3D(self._pointMax-self._pointMin)
+
+    def center(self):
+        return self._center
+
+    def size(self):
+        return self._size
+            
+            
 
 
     @property 
@@ -624,7 +650,13 @@ class Actor(QObject):
         """Returns intersection if any"""
         tMin = -math.inf
         tMax = math.inf
-        obb_xform = self.transform()
+        
+        xform = QMatrix4x4()
+        xform.scale(self._size.x(), self._size.y(), self._size.z())
+        xform.translate(self._center.x(), self._center.y(), self._center.z())
+
+        obb_xform = self._transform
+        obb_xform = obb_xform * xform
         obb_center = QVector3D(obb_xform[0,3], obb_xform[1,3], obb_xform[2,3])
         point = obb_center - ray.origin()
         for i in range(3):

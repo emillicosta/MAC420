@@ -26,6 +26,7 @@ from Source.Graphics.Floor import Floor
 from Source.Graphics.Sphere import Sphere
 from Source.Graphics.SphereTessellation import SphereTessellation
 from Source.Graphics.Obj import Obj
+from Source.Graphics.Gizmos import Gizmos
 import Source.Graphics.PyramidOne as PyramidOne
 import Source.Graphics.PyramidTwo as PyramidTwo
 
@@ -67,8 +68,8 @@ class Renderer(QOpenGLWidget):
         self._trackball = Trackball(velocity=0.05, axis=QVector3D(0.0, 1.0, 0.0), mode=Trackball.TrackballMode.Planar, rotation=self._home_rotation, paused=True)
 
         ## define actor trackball
-        self._actor_rotation = QQuaternion.fromAxisAndAngle(QVector3D(1.0, 0.0, 0.0), 1.0) * QQuaternion.fromAxisAndAngle(QVector3D(0.0, 1.0, 0.0), -1.0) * QQuaternion.fromAxisAndAngle(QVector3D(0.0, 0.0, 1.0), -1.0)
-        self._trackball_actor = Trackball(velocity=0.01, axis=QVector3D(1.0, 0.0, 0.0), mode=Trackball.TrackballMode.Planar, rotation=self._actor_rotation, paused=True)
+        self._actor_rotation = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 1.0, 0.0), 1.0)  * QQuaternion.fromAxisAndAngle(QVector3D(0.0, 0.0, 1.0), -1.0) 
+        self._trackball_actor = Trackball(velocity=0.01, axis=QVector3D(0.0, 1.0, 0.0), paused=True)
         
         ## create main scene
         self._world = World(self, home_position=QVector3D(0, 0, 3.5))
@@ -85,6 +86,7 @@ class Renderer(QOpenGLWidget):
 
         self._transform = None
         self._eixo = None
+        self._gizmos = None
 
 
     def printOpenGLInformation(self, format, verbosity=0):
@@ -297,6 +299,9 @@ class Renderer(QOpenGLWidget):
             self._world.highlightActor(None)
             self._transform = None
             self._eixo = None
+            if self._gizmos is not None:
+                self._world.removeActor(self._gizmos)
+                self._gizmos = None
         
         new_actor = self._world.selectedActor()
 
@@ -308,8 +313,18 @@ class Renderer(QOpenGLWidget):
                     self._transform = None
                     self._eixo = None
                     self._world.removeActor(new_actor)
+                    if self._gizmos is not None:
+                        self._world.removeActor(self._gizmos)
+                        self._gizmos = None
+                    
+                
         elif event.text() in ("x", "X", "y", "Y", "z", "Z"):
             self._eixo = event.text()
+            self.gizmosUpdate(new_actor)
+
+        if event.text() in ("s", "S", "t", "T", "r", "R"):
+            self._eixo = None
+            self.gizmosUpdate(new_actor)
 
         if event.text() in ("s", "S") and new_actor is not None:
             self._transform = event.text()
@@ -320,6 +335,21 @@ class Renderer(QOpenGLWidget):
         elif event.text() in ("r", "R") and new_actor is not None:
             self._transform = event.text()
             print("rotação")
+
+    def gizmosUpdate(self, new_actor):
+        if self._gizmos is not None:
+            self._world.removeActor(self._gizmos)
+            self._gizmos = None 
+        size = new_actor.size()
+        center = new_actor.center()*10
+        xform = QMatrix4x4()
+        xform.translate(center.x(), center.y(), center.z())
+        xform.scale(size.x(), size.y(), size.z())
+        transf = new_actor.transform()
+        transf = transf *xform
+        self.makeCurrent()
+        self._gizmos = Gizmos(self._world, transform=transf, eixo=self._eixo)
+        self._world.addActor(self._gizmos)
 
 
     def mousePressEvent(self, event):
@@ -334,7 +364,10 @@ class Renderer(QOpenGLWidget):
                 self._world.selectActor(new_actor)
                 self._world.highlightActor(new_actor)    
                 self._transform = None
-                self._eixo = None                            
+                self._eixo = None 
+                if self._gizmos is not None:
+                    self._world.removeActor(self._gizmos)
+                    self._gizmos = None                         
 
 
         if event.buttons()== Qt.LeftButton and QApplication.keyboardModifiers() == Qt.ShiftModifier:
@@ -344,15 +377,7 @@ class Renderer(QOpenGLWidget):
             self._world.selectActor(new_actor)
             self._world.highlightActor(new_actor)
                 
-            #ray_clip = QVector4D(point.x(), point.y(), -1.0, 1.0)
-            #camera = self._world.camera
-            #invProjMat= QMatrix4x4(camera.projectionMatrix.data()).inverted()[0]
-            #ray_eye = invProjMat * ray_clip
-            #ray_eye = QVector4D(ray_eye.x(),ray_eye.y(), -1.0, 0.0);
-            #ray_wor = QVector3D(QMatrix4x4(camera.viewMatrix.data()).inverted()[0] * ray_eye)
-            #ray_wor = ray_wor.normalized()
-            #print(self._world.actors())
-            ##acho que é aqui que tenho que gerar o raio
+
         if self._world.selectedActor() is None:
             if event.isAccepted():
                 return
@@ -367,6 +392,18 @@ class Renderer(QOpenGLWidget):
             elif event.buttons() & Qt.RightButton:
                 self.pan(self._pixelPosToViewPos(event.localPos()), state='start')
                 self.update()
+        else:
+            if self._transform in ("r", "R"):
+                self._trackball_actor.press(self._pixelPosToViewPos(event.localPos()), QQuaternion())
+                self._trackball_actor.start()
+                event.accept()
+                xform = QMatrix4x4()
+                quaternion = self._trackball_actor.rotation()
+                xform.rotate(quaternion)
+                actor = self._world.selectedActor() 
+                xform = actor.transform() * xform
+                actor.update(transform=xform)
+                self.gizmosUpdate(actor)
 
 
     def mouseMoveEvent(self, event):
@@ -388,7 +425,7 @@ class Renderer(QOpenGLWidget):
         else: 
             if event.buttons() & Qt.LeftButton:
                 actor = self._world.selectedActor()
-                xform = QMatrix4x4()
+                xform = actor.transform()
                 if self._transform in ("T", "t") and self._eixo is not None:
                     point = self._pixelPosToViewPos(event.localPos())
                     if self._eixo in ("x", "X"):
@@ -396,17 +433,16 @@ class Renderer(QOpenGLWidget):
                     elif self._eixo in ("y", "Y"):
                         xform.translate(0, point.y(), 0)
                     else:
-                        xform.translate(0, 0, point.y())
-                    xform = actor.transform() * xform
+                        xform.translate(0, 0, -point.x())
                     actor.update(transform=xform)
+                    self.gizmosUpdate(actor)
                 elif self._transform in ("r", "R"):
                     self._trackball_actor.move(self._pixelPosToViewPos(event.localPos()), QQuaternion())
+                    event.accept()
                     quaternion = self._trackball_actor.rotation()
                     xform.rotate(quaternion)
-                    #xform[0,0] = 0; xform[0,1] = -1.0
-                    #xform[1,0] = 1.0; xform[1,1] = 0
-                    xform = actor.transform() * xform
                     actor.update(transform=xform)
+                    self.gizmosUpdate(actor)
 
 
     def mouseReleaseEvent(self, event):
@@ -422,6 +458,17 @@ class Renderer(QOpenGLWidget):
                 if not self.isAnimating():
                     self._trackball.stop()
                     self.update()
+        else:
+            if self._transform in ("r", "R"):
+                self._trackball_actor.release(self._pixelPosToViewPos(event.localPos()), QQuaternion())
+                event.accept()
+                xform = QMatrix4x4()
+                quaternion = self._trackball_actor.rotation()
+                xform.rotate(quaternion)
+                actor = self._world.selectedActor() 
+                xform = actor.transform() * xform
+                actor.update(transform=xform)
+                self.gizmosUpdate(actor)
         
         
 
@@ -448,6 +495,7 @@ class Renderer(QOpenGLWidget):
                     xform.scale(1, 1, factorscale)
                 xform = actor.transform() * xform
                 actor.update(transform=xform)
+                self.gizmosUpdate(actor)
 
 
     def zoom(self, diffvalue):

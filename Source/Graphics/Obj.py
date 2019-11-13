@@ -1,4 +1,5 @@
 import os
+import math
 import numpy as np
 from PyQt5.QtGui import QVector3D
 
@@ -31,7 +32,7 @@ class Obj(Actor):
     def __init__(self, scene,  **kwargs):
         """Initialize actor."""
         super(Obj, self).__init__(scene, mode=Actor.RenderMode.Triangles, **kwargs)
-        self._filename = kwargs.get("filename", "obj-models/buildings/1.obj")
+        self._filename = kwargs.get("filename", "obj-models/buildings/2.obj")
         fn = self._filename.split('.')
         self._filename = fn[0]
 
@@ -59,6 +60,12 @@ class Obj(Actor):
 
     def generateGeometry(self):
         v_ = []
+        pointMin_x = math.inf
+        pointMin_y = math.inf
+        pointMin_z = math.inf
+        pointMax_x = -math.inf
+        pointMax_y = -math.inf
+        pointMax_z = -math.inf
         arq = open(self._filename + ".obj", "r")
         for line in arq:
             if line.startswith('#'):
@@ -70,7 +77,24 @@ class Obj(Actor):
                 continue
             else:
                 v_.append([float(values[1]), float(values[2]), float(values[3])])
+                if float(values[1]) < pointMin_x:
+                    pointMin_x = float(values[1])
+                if float(values[2]) < pointMin_y:
+                    pointMin_y = float(values[2])
+                if float(values[3]) < pointMin_z:
+                    pointMin_z = float(values[3])
+
+                if float(values[1]) > pointMax_x:
+                    pointMax_x = float(values[1])
+                if float(values[2]) > pointMax_y:
+                    pointMax_y = float(values[2])
+                if float(values[3]) > pointMax_z:
+                    pointMax_z = float(values[3])
         arq.close()
+        self.setPointMin(QVector3D(pointMin_x, pointMin_y, pointMin_z))
+        self.setPointMax(QVector3D(pointMax_x, pointMax_y, pointMax_z))
+        self.setCenter()
+        self.setSize()
 
         vertices = []
         n = []
