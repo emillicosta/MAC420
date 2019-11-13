@@ -24,7 +24,7 @@ class Gnomon(Scene):
         ## create camera for gnomon scene
         camera = Camera(name="gnomon", position=QVector3D(0.0, 0.0, 4.0), lens=Camera.Lens.Perspective)
         camera.pointAt(QVector3D(0.0, 0.0, 0.0))
-        camera.scaleHeight(0.6)
+        camera.scaleHeight(0.8)
         
         self._marker = None
 

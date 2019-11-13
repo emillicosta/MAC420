@@ -30,6 +30,9 @@ from Source.Graphics.Gizmos import Gizmos
 import Source.Graphics.PyramidOne as PyramidOne
 import Source.Graphics.PyramidTwo as PyramidTwo
 
+
+from Source.Graphics.GizmosScale import GizmosScale 
+
 from enum import IntEnum
 
 class Renderer(QOpenGLWidget):
@@ -344,15 +347,13 @@ class Renderer(QOpenGLWidget):
         if self._gizmos is not None:
             self._world.removeActor(self._gizmos)
             self._gizmos = None 
-        size = new_actor.size()
+        size = new_actor.size()/2 +  QVector3D(1.0,1.0,1.0)
         center = new_actor.center()
-        xform = QMatrix4x4()
-        xform.translate(center.x(), center.y(), center.z())
-        xform.scale(size.x(), size.y(), size.z())
+        
         transf = new_actor.transform()
-        transf = transf * xform
+        #transf = transf * xform
         self.makeCurrent()
-        self._gizmos = Gizmos(self._world, transform=transf, eixo=self._eixo)
+        self._gizmos = GizmosScale(self._world, transform=transf, center=center, size=size)
         self._world.addActor(self._gizmos)
 
 
