@@ -163,15 +163,20 @@ class Obj(Actor):
                         if len(w) >= 2 and len(w[1]) > 0:
                             texture.append(t[int(w[1]) -1])
                         if len(w) >= 3 and len(w[2]) > 0:
-                            normals.append(n[int(w[2])-1])
+                            norm = QVector3D(n[int(w[2])-1][0], n[int(w[2])-1][1], n[int(w[2])-1][2])
+                            norm = norm.normalized()
+                            normals.append([norm[0], norm[1], norm[2]])
                         else:
-                            normals.append(n[33])
+                            norm = QVector3D(v_[int(w[0])-1][0], v_[int(w[0])-1][1], v_[int(w[0])-1][2])
+                            norm = norm.normalized()
+                            normals.append([norm[0], norm[1], norm[2]])
         arq.close()
 
         self._vertices = np.array(vertices, dtype=np.float32)
         self._normals = np.array(normals, dtype=np.float32)
         self._texcoords = np.array(texture, dtype=np.float32)
         self._colors = np.array(colors, dtype=np.float32)
+
 
 
     def initialize(self):

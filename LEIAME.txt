@@ -1,0 +1,12 @@
+Autor: 11585716 - Débora Emilli Costa Oliveira
+
+
+A leitura dos objs estão na classe Obj.py
+Para sinalizar os atores que são selecionados, há mudança de cor
+Os manipuladores foram implementados nas classes gizmosScale, gizmosTranslate, gizmosRotate
+A translação se encontra na classe Renderer, na função mouseMoveEvent
+A escala é feita pelo movimento de zoom do mouse, e se enontra na classe Renderer, na função wheelEvent
+A Rotação é feita usando um trackball virtual na classe Render, na função mouseMoveEvent
+A remoção do objeto selecionado da cena é realizada ao apertar a tecla del, "x" ou "X".
+
+Para executar, no terminal na pasta que encontre o executável, escreva python3 main.py

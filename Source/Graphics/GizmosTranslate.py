@@ -11,12 +11,12 @@ from Source.Graphics.Icosahedron import Icosahedron
 from Source.Graphics.Gizmos import Gizmos
 
 ##  The orientation marker
-class GizmosScale(Group):
+class GizmosTranslate(Group):
 
     ## initialization
     def __init__(self, scene, **kwargs):
         """Initialize actor."""
-        super(GizmosScale, self).__init__(scene, **kwargs)
+        super(GizmosTranslate, self).__init__(scene, **kwargs)
 
         self._resolution = kwargs.get("resolution", 12)
         self._colorx = kwargs.get("xcolor", QVector3D(1.0, 0.0, 0.0))
@@ -28,7 +28,7 @@ class GizmosScale(Group):
         self.eixo = kwargs.get("eixo", None)
 
         self.setPickable(False)
-        self.setName("GizmosScale")
+        self.setName("GizmosTranslate")
 
         if self.eixo in ("X", "x"):
             self._colorx = QVector3D(1.0, 0, 0)
@@ -59,8 +59,9 @@ class GizmosScale(Group):
         xform.translate(self.center.x() + self.size.x(), self.center.y(), self.center.z())
         xform.scale(0.05, 0.05, 0.05)
         xform.scale(self.size.x(), self.size.y(), self.size.z())
+        xform.rotate(-90.0, QVector3D(0.0, 0.0, 1.0))
         transf = self._transform * xform
-        self.addPart(Cube(self.scene, name="xaxis", material=Material(diffuse=self._colorx, specular=QVector3D(0.5, 0.5, 0.5), 
+        self.addPart(Cone(self.scene, name="xaxis", material=Material(diffuse=self._colorx, specular=QVector3D(0.5, 0.5, 0.5), 
             shininess=76.8), transform=transf))
 
 
@@ -70,7 +71,7 @@ class GizmosScale(Group):
         xform.scale(0.05, 0.05, 0.05)
         xform.scale(self.size.x(), self.size.y(), self.size.z())
         transf = self._transform * xform
-        self.addPart(Cube(self.scene, name="yaxis", material=Material(diffuse=self._colory, specular=QVector3D(0.5, 0.5, 0.5), 
+        self.addPart(Cone(self.scene, name="yaxis", material=Material(diffuse=self._colory, specular=QVector3D(0.5, 0.5, 0.5), 
             shininess=76.8), transform=transf))
 
         ## z axis cone
@@ -78,6 +79,7 @@ class GizmosScale(Group):
         xform.translate(self.center.x(), self.center.y(), self.center.z() + self.size.z())
         xform.scale(0.05, 0.05, 0.05)
         xform.scale(self.size.x(), self.size.y(), self.size.z())
+        xform.rotate(90.0, QVector3D(1.0, 0.0, 0.0))
         transf = self._transform * xform
-        self.addPart(Cube(self.scene, name="zaxis", material=Material(diffuse=self._colorz, specular=QVector3D(0.5, 0.5, 0.5), 
+        self.addPart(Cone(self.scene, name="zaxis", material=Material(diffuse=self._colorz, specular=QVector3D(0.5, 0.5, 0.5), 
             shininess=76.8), transform=transf))

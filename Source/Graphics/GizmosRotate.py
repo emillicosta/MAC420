@@ -11,12 +11,12 @@ from Source.Graphics.Icosahedron import Icosahedron
 from Source.Graphics.Gizmos import Gizmos
 
 ##  The orientation marker
-class GizmosScale(Group):
+class GizmosRotate(Group):
 
     ## initialization
     def __init__(self, scene, **kwargs):
         """Initialize actor."""
-        super(GizmosScale, self).__init__(scene, **kwargs)
+        super(GizmosRotate, self).__init__(scene, **kwargs)
 
         self._resolution = kwargs.get("resolution", 12)
         self._colorx = kwargs.get("xcolor", QVector3D(1.0, 0.0, 0.0))
@@ -26,9 +26,6 @@ class GizmosScale(Group):
         self.size = kwargs.get("size", QVector3D(1.0,1.0,1.0))
         self.center = kwargs.get("center", QVector3D(0.0, 0.0, 0.0))
         self.eixo = kwargs.get("eixo", None)
-
-        self.setPickable(False)
-        self.setName("GizmosScale")
 
         if self.eixo in ("X", "x"):
             self._colorx = QVector3D(1.0, 0, 0)
@@ -46,6 +43,9 @@ class GizmosScale(Group):
             self._colorx = QVector3D(1.0, 0, 0)
             self._colory = QVector3D(0.0, 1.0, 0)
             self._colorz = QVector3D(0.0, 0, 1.0)
+
+        self.setPickable(False)
+        self.setName("GizmosRotate")
        
         ## create lines
         xform = QMatrix4x4()
@@ -60,7 +60,7 @@ class GizmosScale(Group):
         xform.scale(0.05, 0.05, 0.05)
         xform.scale(self.size.x(), self.size.y(), self.size.z())
         transf = self._transform * xform
-        self.addPart(Cube(self.scene, name="xaxis", material=Material(diffuse=self._colorx, specular=QVector3D(0.5, 0.5, 0.5), 
+        self.addPart(Icosahedron(self.scene, name="xaxis", material=Material(diffuse=self._colorx, specular=QVector3D(0.5, 0.5, 0.5), 
             shininess=76.8), transform=transf))
 
 
@@ -70,7 +70,7 @@ class GizmosScale(Group):
         xform.scale(0.05, 0.05, 0.05)
         xform.scale(self.size.x(), self.size.y(), self.size.z())
         transf = self._transform * xform
-        self.addPart(Cube(self.scene, name="yaxis", material=Material(diffuse=self._colory, specular=QVector3D(0.5, 0.5, 0.5), 
+        self.addPart(Icosahedron(self.scene, name="yaxis", material=Material(diffuse=self._colory, specular=QVector3D(0.5, 0.5, 0.5), 
             shininess=76.8), transform=transf))
 
         ## z axis cone
@@ -79,5 +79,5 @@ class GizmosScale(Group):
         xform.scale(0.05, 0.05, 0.05)
         xform.scale(self.size.x(), self.size.y(), self.size.z())
         transf = self._transform * xform
-        self.addPart(Cube(self.scene, name="zaxis", material=Material(diffuse=self._colorz, specular=QVector3D(0.5, 0.5, 0.5), 
+        self.addPart(Icosahedron(self.scene, name="zaxis", material=Material(diffuse=self._colorz, specular=QVector3D(0.5, 0.5, 0.5), 
             shininess=76.8), transform=transf))

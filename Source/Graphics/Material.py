@@ -10,7 +10,7 @@ class Material(QObject):
         super(Material, self).__init__()
 
         self._emissionColor = kwargs.get("emission", QVector3D(0.0, 0.0, 0.0))
-        self._ambientColor = kwargs.get("ambient", QVector3D(0.5, 0.5, 0.5))
+        self._ambientColor = kwargs.get("ambient", QVector3D(1.0, 1.0, 1.0))
         self._diffuseColor = kwargs.get("diffuse", QVector3D(0.8, 0.8, 0.8))
         self._specularColor = kwargs.get("specular", QVector3D(0.0, 0.0, 0.0))
         self._shininess = float(kwargs.get("shininess", 12.0))

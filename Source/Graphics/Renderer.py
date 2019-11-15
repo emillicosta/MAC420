@@ -32,6 +32,8 @@ import Source.Graphics.PyramidTwo as PyramidTwo
 
 
 from Source.Graphics.GizmosScale import GizmosScale 
+from Source.Graphics.GizmosTranslate import GizmosTranslate 
+from Source.Graphics.GizmosRotate import GizmosRotate
 
 from enum import IntEnum
 
@@ -311,37 +313,41 @@ class Renderer(QOpenGLWidget):
                 self._gizmos = None
         
         new_actor = self._world.selectedActor()
+        if new_actor is not None:
+            if event.key() == Qt.Key_Delete:
+                    self.removeSelected(new_actor)
+            if self._transform is None:
+                if event.text() in ("x", "X"):
+                    self.removeSelected(new_actor)
+                             
+            elif event.text() in ("x", "X", "y", "Y", "z", "Z"):
+                self._eixo = event.text()
+                self.gizmosUpdate(new_actor)
 
-        if self._transform == None:
-            if event.key() == Qt.Key_Delete or event.text() in ("x", "X"):
-                if new_actor is not None:
-                    self._world.selectActor(None)
-                    self._world.highlightActor(None)
-                    self._transform = None
-                    self._eixo = None
-                    self._world.removeActor(new_actor)
-                    if self._gizmos is not None:
-                        self._world.removeActor(self._gizmos)
-                        self._gizmos = None
-                    
-                
-        elif event.text() in ("x", "X", "y", "Y", "z", "Z"):
-            self._eixo = event.text()
-            self.gizmosUpdate(new_actor)
+            if event.text() in ("s", "S") and new_actor is not None:
+                self._transform = event.text()
+                self._eixo = None
+                self.gizmosUpdate(new_actor)
 
-        if event.text() in ("s", "S", "t", "T", "r", "R"):
-            self._eixo = None
-            self.gizmosUpdate(new_actor)
+            elif event.text() in ("t", "T") and new_actor is not None:
+                self._transform = event.text()
+                self._eixo = None
+                self.gizmosUpdate(new_actor)
 
-        if event.text() in ("s", "S") and new_actor is not None:
-            self._transform = event.text()
-            print("escala")
-        elif event.text() in ("t", "T") and new_actor is not None:
-            self._transform = event.text()
-            print("translação")
-        elif event.text() in ("r", "R") and new_actor is not None:
-            self._transform = event.text()
-            print("rotação")
+            elif event.text() in ("r", "R") and new_actor is not None:
+                self._transform = event.text()
+                self._eixo = None
+                self.gizmosUpdate(new_actor)
+
+    def removeSelected(self,new_actor):
+        self._world.selectActor(None)
+        self._world.highlightActor(None)
+        self._transform = None
+        self._eixo = None
+        self._world.removeActor(new_actor)
+        if self._gizmos is not None:
+            self._world.removeActor(self._gizmos)
+            self._gizmos = None
 
     def gizmosUpdate(self, new_actor):
         if self._gizmos is not None:
@@ -349,12 +355,23 @@ class Renderer(QOpenGLWidget):
             self._gizmos = None 
         size = new_actor.size()/2 +  QVector3D(1.0,1.0,1.0)
         center = new_actor.center()
-        
         transf = new_actor.transform()
-        #transf = transf * xform
+        eixo = self._eixo
+        if self._transform in ("R", "r"):
+            eixo = None
+            
+
         self.makeCurrent()
-        self._gizmos = GizmosScale(self._world, transform=transf, center=center, size=size)
-        self._world.addActor(self._gizmos)
+        if self._transform in ("s", "S"):
+            self._gizmos = GizmosScale(self._world, transform=transf, center=center, size=size, eixo=eixo)
+            self._world.addActor(self._gizmos)
+        elif self._transform in ("t", "T"):
+            self._gizmos = GizmosTranslate(self._world, transform=transf, center=center, size=size, eixo= eixo)
+            self._world.addActor(self._gizmos)
+        elif self._transform in ("r", "R"):
+            self._gizmos = GizmosRotate(self._world, transform=transf, center=center, size=size, eixo= eixo)
+            self._world.addActor(self._gizmos)
+        
 
 
     def mousePressEvent(self, event):
@@ -371,6 +388,7 @@ class Renderer(QOpenGLWidget):
                 self._transform = None
                 self._eixo = None 
                 if self._gizmos is not None:
+                    self.makeCurrent()
                     self._world.removeActor(self._gizmos)
                     self._gizmos = None                         
 
@@ -684,7 +702,7 @@ class Renderer(QOpenGLWidget):
         elif index == Renderer.ActorType.OBJ13:
             self.currentActor_ = Obj(self._world, filename="obj-models/buildings/13.obj")
         elif index == Renderer.ActorType.OBJ14:
-            self.currentActor_ = Obj(self._world, filename="obj-models/buildings/2.obj")
+            self.currentActor_ = Obj(self._world, filename="obj-models/low-poly-mill/low-poly-mill.obj")
 
 
         self._world.addActor(self.currentActor_)

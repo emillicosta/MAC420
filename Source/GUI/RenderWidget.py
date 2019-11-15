@@ -50,6 +50,7 @@ class RenderWidget(QWidget):
         self.actorCombo.addItem("obj 11", Renderer.ActorType.OBJ11)
         self.actorCombo.addItem("obj 12", Renderer.ActorType.OBJ12)
         self.actorCombo.addItem("obj 13", Renderer.ActorType.OBJ13)
+        self.actorCombo.addItem("low-poly-mill", Renderer.ActorType.OBJ14)
 
         
         self.actorCombo.currentIndexChanged.connect(self._renderer.changeActor)
